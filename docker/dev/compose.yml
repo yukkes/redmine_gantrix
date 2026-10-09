@@ -1,0 +1,87 @@
+# Redmine 5.0 / 5.1 / 6.0 / 6.1 / 7.0 with this plugin (and its bundled theme gantrix), plus the recommended
+# companion plugins fetched by docker/dev/companions.sh. The entrypoint installs their gems on start.
+# SQLite, for development and testing. Ports are bound to 127.0.0.1 only.
+# Start with docker/dev/up.sh; for other commands: docker compose -f docker/dev/compose.yml ...
+# Services are named after the Redmine version (redmine-5.0 ... redmine-7.0).
+name: redmine_gantrix
+
+x-redmine: &redmine
+  environment:
+    REDMINE_PLUGINS_MIGRATE: "1"
+    REDMINE_SECRET_KEY_BASE: "dev-only-secret-key-base-change-me-0123456789abcdef"
+    SECRET_KEY_BASE: "dev-only-secret-key-base-change-me-0123456789abcdef"
+  restart: unless-stopped
+
+services:
+  redmine-5.0:
+    <<: *redmine
+    image: redmine:5.0
+    ports: ["127.0.0.1:3050:3000"]
+    volumes:
+      - ../..:/usr/src/redmine/plugins/redmine_gantrix
+      - ./companions/redmine_issue_trash:/usr/src/redmine/plugins/redmine_issue_trash
+      - ./companions/redmine_issue_templates:/usr/src/redmine/plugins/redmine_issue_templates
+      - ./companions/redmine_microsoftteams:/usr/src/redmine/plugins/redmine_microsoftteams
+      - ./companions/redmine_merge_request_links:/usr/src/redmine/plugins/redmine_merge_request_links
+      - ./companions/redmine_textile_transparent:/usr/src/redmine/plugins/redmine_textile_transparent
+      - ./:/seed:ro
+      - r50-sqlite:/usr/src/redmine/sqlite
+  redmine-5.1:
+    <<: *redmine
+    image: redmine:5.1
+    ports: ["127.0.0.1:3005:3000"]
+    volumes:
+      - ../..:/usr/src/redmine/plugins/redmine_gantrix
+      - ./companions/redmine_issue_trash:/usr/src/redmine/plugins/redmine_issue_trash
+      - ./companions/redmine_issue_templates:/usr/src/redmine/plugins/redmine_issue_templates
+      - ./companions/redmine_microsoftteams:/usr/src/redmine/plugins/redmine_microsoftteams
+      - ./companions/redmine_merge_request_links:/usr/src/redmine/plugins/redmine_merge_request_links
+      - ./companions/redmine_textile_transparent:/usr/src/redmine/plugins/redmine_textile_transparent
+      - ./:/seed:ro
+      - r5-sqlite:/usr/src/redmine/sqlite
+  redmine-6.0:
+    <<: *redmine
+    image: redmine:6.0
+    ports: ["127.0.0.1:3060:3000"]
+    volumes:
+      - ../..:/usr/src/redmine/plugins/redmine_gantrix
+      - ./companions/redmine_issue_trash:/usr/src/redmine/plugins/redmine_issue_trash
+      - ./companions/redmine_issue_templates:/usr/src/redmine/plugins/redmine_issue_templates
+      - ./companions/redmine_microsoftteams:/usr/src/redmine/plugins/redmine_microsoftteams
+      - ./companions/redmine_merge_request_links:/usr/src/redmine/plugins/redmine_merge_request_links
+      - ./companions/redmine_textile_transparent:/usr/src/redmine/plugins/redmine_textile_transparent
+      - ./:/seed:ro
+      - r60-sqlite:/usr/src/redmine/sqlite
+  redmine-6.1:
+    <<: *redmine
+    image: redmine:6.1
+    ports: ["127.0.0.1:3006:3000"]
+    volumes:
+      - ../..:/usr/src/redmine/plugins/redmine_gantrix
+      - ./companions/redmine_issue_trash:/usr/src/redmine/plugins/redmine_issue_trash
+      - ./companions/redmine_issue_templates:/usr/src/redmine/plugins/redmine_issue_templates
+      - ./companions/redmine_microsoftteams:/usr/src/redmine/plugins/redmine_microsoftteams
+      - ./companions/redmine_merge_request_links:/usr/src/redmine/plugins/redmine_merge_request_links
+      - ./companions/redmine_textile_transparent:/usr/src/redmine/plugins/redmine_textile_transparent
+      - ./:/seed:ro
+      - r6-sqlite:/usr/src/redmine/sqlite
+  redmine-7.0:
+    <<: *redmine
+    image: redmine:7.0
+    ports: ["127.0.0.1:3007:3000"]
+    volumes:
+      - ../..:/usr/src/redmine/plugins/redmine_gantrix
+      - ./companions/redmine_issue_trash:/usr/src/redmine/plugins/redmine_issue_trash
+      - ./companions/redmine_issue_templates:/usr/src/redmine/plugins/redmine_issue_templates
+      - ./companions/redmine_microsoftteams:/usr/src/redmine/plugins/redmine_microsoftteams
+      - ./companions/redmine_merge_request_links:/usr/src/redmine/plugins/redmine_merge_request_links
+      - ./companions/redmine_textile_transparent:/usr/src/redmine/plugins/redmine_textile_transparent
+      - ./:/seed:ro
+      - r7-sqlite:/usr/src/redmine/sqlite
+
+volumes:
+  r50-sqlite:
+  r5-sqlite:
+  r60-sqlite:
+  r6-sqlite:
+  r7-sqlite:

@@ -1,0 +1,50 @@
+# Performance checks on a project the size of a long-running real one (checks/large_seed.rb), with Redmine 7 and
+# PostgreSQL 17 limited like the ECS Fargate task (0.5 vCPU / 1 GB), so a runaway request is stopped by the
+# container's memory limit instead of exhausting the host.
+#   docker compose -f docker/dev/compose.large.yml up -d
+#   docker compose -f docker/dev/compose.large.yml exec -T redmine bin/rails runner /seed/checks/large_seed.rb
+#   NODE_PATH=<dir with playwright>/node_modules node docker/dev/large_test.js 3008
+name: redmine_gantrix_large
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: redmine
+      POSTGRES_USER: redmine
+      POSTGRES_PASSWORD: redmine
+    volumes:
+      - large-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U redmine -d redmine"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    mem_limit: 1g
+    memswap_limit: 1g
+    cpus: 1
+
+  redmine:
+    image: redmine:7.0
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      REDMINE_DB_POSTGRES: db
+      REDMINE_DB_DATABASE: redmine
+      REDMINE_DB_USERNAME: redmine
+      REDMINE_DB_PASSWORD: redmine
+      REDMINE_PLUGINS_MIGRATE: "1"
+      SECRET_KEY_BASE: "dev-only-secret-key-base-change-me-0123456789abcdef"
+      RAILS_ENV: production
+    ports: ["127.0.0.1:3008:3000"]
+    volumes:
+      - ../..:/usr/src/redmine/plugins/redmine_gantrix
+      - ./:/seed:ro
+    mem_limit: 1g
+    memswap_limit: 1g
+    cpus: 0.5
+    pids_limit: 256
+
+volumes:
+  large-db:
