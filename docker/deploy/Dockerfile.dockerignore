@@ -1,0 +1,12 @@
+# Build context is the repository root, which is the plugin itself; only send what Redmine
+# loads at runtime and what the Dockerfile copies.
+*
+!init.rb
+!app
+!assets
+!config
+!lib
+!themes
+!LICENSE
+!NOTICE.md
+!docker/deploy/additional_environment.rb
