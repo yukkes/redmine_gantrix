@@ -1,0 +1,1518 @@
+/* Gantrix テーマ
+   Redmine 標準テーマのレイアウトはそのままに、色とアイコンだけを lychee_theme_basic に合わせる。JavaScript は使わない。
+   色の定義・アイコン・画像は lychee_theme_basic（MIT License, © Agileware Inc.）から流用。
+   標準の CSS の読み込みは Redmine 6・7 の書き方。Redmine 5 では起動時に public/themes へコピーするときに書き換える（init.rb）。 */
+
+@import url(/application.css);
+
+/* ==== 色・文字サイズなどの定義 ==== */
+
+/* ==== variables ==== */
+
+:root {
+  /* Colors
+     Product */
+  --product-default: #085A79;
+  --product-hover: #074D69;
+  --product-active: #06425A;
+  --product-lychee: #D7000F;
+
+  /* Status */
+  --status-danger: #CC0000;
+  --status-danger-dark: #AF0000;
+  --status-danger-light: #F6EBEB;
+  --status-success: #0B8749;
+  --status-success-light: #DAFCEB;
+  --status-info: #015CC8;
+  --status-info-light: #D7F2FC;
+  --status-warning: #EAB600;
+  --status-warning-dark: #755C00;
+  --status-warning-light: #FFF3C8;
+  --status-link: #116699;
+  --status-link-hover: #C61A1A;
+
+  /* Text */
+  --txt-default: #002E40;
+  --txt-caption: #557079; /* lychee の #66828C を少し濃く: 白地で 4.5:1 以上（Lighthouse のコントラスト） */
+  --txt-onFill: #FFFFFF;
+  --txt-danger: #AF0000;
+  --txt-link: #116699;
+
+  /* Text RGB */
+  --txt-default-rgb: 0, 46, 64;
+  --txt-caption-rgb: 85, 112, 121;
+
+  /* Background */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F0F2F3;
+  --bg-tertiary: #DDE9EE;
+  --bg-dark: #002E40;
+
+  /* Background RGB */
+  --bg-secondary-rgb: 240, 242, 243;
+  --bg-tertiary-rgb: 221, 233, 238;
+  --bg-dark-rgb: 0, 46, 64;
+
+  /* Border */
+  --border-default: #CCD5D9;
+  --border-dark: #99ABB3;
+  --border-divider: #E6EAEC;
+  --border-onFill: #FFFFFF;
+  --border-danger: #AF0000;
+  --border-warning: #755C00;
+
+  /* Text
+     30px */
+  --txt-3xl: 1.875rem;
+
+  /* 24px */
+  --txt-2xl: 1.5rem;
+
+  /* 20px */
+  --txt-xl: 1.25rem;
+
+  /* 18px */
+  --txt-lg: 1.125rem;
+
+  /* 16px */
+  --txt-base: 1rem;
+
+  /* 14px */
+  --txt-md: 0.875rem;
+
+  /* 13px */
+  --txt-sm: 0.8125rem;
+
+  /* 12px */
+  --txt-xs: 0.75rem;
+
+  /* 11px */
+  --txt-xxs: 0.6875rem;
+
+  /* Border Radius */
+  --bd-radius-sm: 2px;
+  --bd-radius-base: 4px;
+  --bd-radius-md: 6px;
+  --bd-radius-lg: 8px;
+  --bd-radius-xl: 12px;
+  --bd-radius-2xl: 16px;
+  --bd-radius-3xl: 24px;
+  --bd-radius-full: 9999px;
+  --bd-radius-none: 0px;
+
+  /* Shadow */
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-none: none;
+
+  /* Other */
+  --mobile-header: 64px;
+
+  /* Primitive */
+  --neutral-black-900: #1D1D1D;
+  --neutral-black-800: #3D3D3D;
+  --neutral-black-700: #5C5C5C;
+  --neutral-black-600: #707070;
+  --neutral-black-500: #989898;
+  --neutral-black-400: #B8B8B8;
+  --neutral-black-300: #DBDBDB;
+  --neutral-black-200: #EAEAEA;
+  --neutral-black-100: #F3F3F3;
+  --neutral-black-50: #F9F9F9;
+}
+
+/* ==== openColor ==== */
+
+:root {
+  /* General
+   *  ─────────────────────────────────── */
+  --oc-white: #ffffff;
+  --oc-white-rgb: 255, 255, 255;
+  --oc-black: #000000;
+  --oc-black-rgb: 0, 0, 0;
+
+  /* Gray
+   *  ─────────────────────────────────── */
+  --oc-gray-0: #f8f9fa;
+  --oc-gray-0-rgb: 248, 249, 250;
+  --oc-gray-1: #f1f3f5;
+  --oc-gray-1-rgb: 241, 243, 245;
+  --oc-gray-2: #e9ecef;
+  --oc-gray-2-rgb: 233, 236, 239;
+  --oc-gray-3: #dee2e6;
+  --oc-gray-3-rgb: 222, 226, 230;
+  --oc-gray-4: #ced4da;
+  --oc-gray-4-rgb: 206, 212, 218;
+  --oc-gray-5: #adb5bd;
+  --oc-gray-5-rgb: 173, 181, 189;
+  --oc-gray-6: #868e96;
+  --oc-gray-6-rgb: 134, 142, 150;
+  --oc-gray-7: #495057;
+  --oc-gray-7-rgb: 73, 80, 87;
+  --oc-gray-8: #343a40;
+  --oc-gray-8-rgb: 52, 58, 64;
+  --oc-gray-9: #212529;
+  --oc-gray-9-rgb: 33, 37, 41;
+
+  /* Red
+   *  ─────────────────────────────────── */
+  --oc-red-0: #fff5f5;
+  --oc-red-0-rgb: 255, 245, 245;
+  --oc-red-1: #ffe3e3;
+  --oc-red-1-rgb: 255, 227, 227;
+  --oc-red-2: #ffc9c9;
+  --oc-red-2-rgb: 255, 201, 201;
+  --oc-red-3: #ffa8a8;
+  --oc-red-3-rgb: 255, 168, 168;
+  --oc-red-4: #ff8787;
+  --oc-red-4-rgb: 255, 135, 135;
+  --oc-red-5: #ff6b6b;
+  --oc-red-5-rgb: 255, 107, 107;
+  --oc-red-6: #fa5252;
+  --oc-red-6-rgb: 250, 82, 82;
+  --oc-red-7: #f03e3e;
+  --oc-red-7-rgb: 240, 62, 62;
+  --oc-red-8: #e03131;
+  --oc-red-8-rgb: 224, 49, 49;
+  --oc-red-9: #c92a2a;
+  --oc-red-9-rgb: 201, 42, 42;
+
+  /* Pink
+   *  ─────────────────────────────────── */
+  --oc-pink-0: #fff0f6;
+  --oc-pink-0-rgb: 255, 240, 246;
+  --oc-pink-1: #ffdeeb;
+  --oc-pink-1-rgb: 255, 222, 235;
+  --oc-pink-2: #fcc2d7;
+  --oc-pink-2-rgb: 252, 194, 215;
+  --oc-pink-3: #faa2c1;
+  --oc-pink-3-rgb: 250, 162, 193;
+  --oc-pink-4: #f783ac;
+  --oc-pink-4-rgb: 247, 131, 172;
+  --oc-pink-5: #f06595;
+  --oc-pink-5-rgb: 240, 101, 149;
+  --oc-pink-6: #e64980;
+  --oc-pink-6-rgb: 230, 73, 128;
+  --oc-pink-7: #d6336c;
+  --oc-pink-7-rgb: 214, 51, 108;
+  --oc-pink-8: #c2255c;
+  --oc-pink-8-rgb: 194, 37, 92;
+  --oc-pink-9: #a61e4d;
+  --oc-pink-9-rgb: 166, 30, 77;
+
+  /* Grape
+   *  ─────────────────────────────────── */
+  --oc-grape-0: #f8f0fc;
+  --oc-grape-0-rgb: 248, 240, 252;
+  --oc-grape-1: #f3d9fa;
+  --oc-grape-1-rgb: 243, 217, 250;
+  --oc-grape-2: #eebefa;
+  --oc-grape-2-rgb: 238, 190, 250;
+  --oc-grape-3: #e599f7;
+  --oc-grape-3-rgb: 229, 153, 247;
+  --oc-grape-4: #da77f2;
+  --oc-grape-4-rgb: 218, 119, 242;
+  --oc-grape-5: #cc5de8;
+  --oc-grape-5-rgb: 204, 93, 232;
+  --oc-grape-6: #be4bdb;
+  --oc-grape-6-rgb: 190, 75, 219;
+  --oc-grape-7: #ae3ec9;
+  --oc-grape-7-rgb: 174, 62, 201;
+  --oc-grape-8: #9c36b5;
+  --oc-grape-8-rgb: 156, 54, 181;
+  --oc-grape-9: #862e9c;
+  --oc-grape-9-rgb: 134, 46, 156;
+
+  /* Violet
+   *  ─────────────────────────────────── */
+  --oc-violet-0: #f3f0ff;
+  --oc-violet-0-rgb: 243, 240, 255;
+  --oc-violet-1: #e5dbff;
+  --oc-violet-1-rgb: 229, 219, 255;
+  --oc-violet-2: #d0bfff;
+  --oc-violet-2-rgb: 208, 191, 255;
+  --oc-violet-3: #b197fc;
+  --oc-violet-3-rgb: 177, 151, 252;
+  --oc-violet-4: #9775fa;
+  --oc-violet-4-rgb: 151, 117, 250;
+  --oc-violet-5: #845ef7;
+  --oc-violet-5-rgb: 132, 94, 247;
+  --oc-violet-6: #7950f2;
+  --oc-violet-6-rgb: 121, 80, 242;
+  --oc-violet-7: #7048e8;
+  --oc-violet-7-rgb: 112, 72, 232;
+  --oc-violet-8: #6741d9;
+  --oc-violet-8-rgb: 103, 65, 217;
+  --oc-violet-9: #5f3dc4;
+  --oc-violet-9-rgb: 95, 61, 196;
+
+  /* Indigo
+   *  ─────────────────────────────────── */
+  --oc-indigo-0: #edf2ff;
+  --oc-indigo-0-rgb: 237, 242, 255;
+  --oc-indigo-1: #dbe4ff;
+  --oc-indigo-1-rgb: 219, 228, 255;
+  --oc-indigo-2: #bac8ff;
+  --oc-indigo-2-rgb: 186, 200, 255;
+  --oc-indigo-3: #91a7ff;
+  --oc-indigo-3-rgb: 145, 167, 255;
+  --oc-indigo-4: #748ffc;
+  --oc-indigo-4-rgb: 116, 143, 252;
+  --oc-indigo-5: #5c7cfa;
+  --oc-indigo-5-rgb: 92, 124, 250;
+  --oc-indigo-6: #4c6ef5;
+  --oc-indigo-6-rgb: 76, 110, 245;
+  --oc-indigo-7: #4263eb;
+  --oc-indigo-7-rgb: 66, 99, 235;
+  --oc-indigo-8: #3b5bdb;
+  --oc-indigo-8-rgb: 59, 91, 219;
+  --oc-indigo-9: #364fc7;
+  --oc-indigo-9-rgb: 54, 79, 199;
+
+  /* Blue
+   *  ─────────────────────────────────── */
+  --oc-blue-0: #e7f5ff;
+  --oc-blue-0-rgb: 231, 245, 255;
+  --oc-blue-1: #d0ebff;
+  --oc-blue-1-rgb: 208, 235, 255;
+  --oc-blue-2: #a5d8ff;
+  --oc-blue-2-rgb: 165, 216, 255;
+  --oc-blue-3: #74c0fc;
+  --oc-blue-3-rgb: 116, 192, 252;
+  --oc-blue-4: #4dabf7;
+  --oc-blue-4-rgb: 77, 171, 247;
+  --oc-blue-5: #339af0;
+  --oc-blue-5-rgb: 51, 154, 240;
+  --oc-blue-6: #228be6;
+  --oc-blue-6-rgb: 34, 139, 230;
+  --oc-blue-7: #1c7ed6;
+  --oc-blue-7-rgb: 28, 126, 214;
+  --oc-blue-8: #1971c2;
+  --oc-blue-8-rgb: 25, 113, 194;
+  --oc-blue-9: #1864ab;
+  --oc-blue-9-rgb: 24, 100, 171;
+
+  /* Cyan
+   *  ─────────────────────────────────── */
+  --oc-cyan-0: #e3fafc;
+  --oc-cyan-0-rgb: 227, 250, 252;
+  --oc-cyan-1: #c5f6fa;
+  --oc-cyan-1-rgb: 197, 246, 250;
+  --oc-cyan-2: #99e9f2;
+  --oc-cyan-2-rgb: 153, 233, 242;
+  --oc-cyan-3: #66d9e8;
+  --oc-cyan-3-rgb: 102, 217, 232;
+  --oc-cyan-4: #3bc9db;
+  --oc-cyan-4-rgb: 59, 201, 219;
+  --oc-cyan-5: #22b8cf;
+  --oc-cyan-5-rgb: 34, 184, 207;
+  --oc-cyan-6: #15aabf;
+  --oc-cyan-6-rgb: 21, 170, 191;
+  --oc-cyan-7: #1098ad;
+  --oc-cyan-7-rgb: 16, 152, 173;
+  --oc-cyan-8: #0c8599;
+  --oc-cyan-8-rgb: 12, 133, 153;
+  --oc-cyan-9: #0b7285;
+  --oc-cyan-9-rgb: 11, 114, 133;
+
+  /* Teal
+   *  ─────────────────────────────────── */
+  --oc-teal-0: #e6fcf5;
+  --oc-teal-0-rgb: 230, 252, 245;
+  --oc-teal-1: #c3fae8;
+  --oc-teal-1-rgb: 195, 250, 232;
+  --oc-teal-2: #96f2d7;
+  --oc-teal-2-rgb: 150, 242, 215;
+  --oc-teal-3: #63e6be;
+  --oc-teal-3-rgb: 99, 230, 190;
+  --oc-teal-4: #38d9a9;
+  --oc-teal-4-rgb: 56, 217, 169;
+  --oc-teal-5: #20c997;
+  --oc-teal-5-rgb: 32, 201, 151;
+  --oc-teal-6: #12b886;
+  --oc-teal-6-rgb: 18, 184, 134;
+  --oc-teal-7: #0ca678;
+  --oc-teal-7-rgb: 12, 166, 120;
+  --oc-teal-8: #099268;
+  --oc-teal-8-rgb: 9, 146, 104;
+  --oc-teal-9: #087f5b;
+  --oc-teal-9-rgb: 8, 127, 91;
+
+  /* Green
+   *  ─────────────────────────────────── */
+  --oc-green-0: #ebfbee;
+  --oc-green-0-rgb: 235, 251, 238;
+  --oc-green-1: #d3f9d8;
+  --oc-green-1-rgb: 211, 249, 216;
+  --oc-green-2: #b2f2bb;
+  --oc-green-2-rgb: 178, 242, 187;
+  --oc-green-3: #8ce99a;
+  --oc-green-3-rgb: 140, 233, 154;
+  --oc-green-4: #69db7c;
+  --oc-green-4-rgb: 105, 219, 124;
+  --oc-green-5: #51cf66;
+  --oc-green-5-rgb: 81, 207, 102;
+  --oc-green-6: #40c057;
+  --oc-green-6-rgb: 64, 192, 87;
+  --oc-green-7: #37b24d;
+  --oc-green-7-rgb: 55, 178, 77;
+  --oc-green-8: #2f9e44;
+  --oc-green-8-rgb: 47, 158, 68;
+  --oc-green-9: #2b8a3e;
+  --oc-green-9-rgb: 43, 138, 62;
+
+  /* Lime
+   *  ─────────────────────────────────── */
+  --oc-lime-0: #f4fce3;
+  --oc-lime-0-rgb: 244, 252, 227;
+  --oc-lime-1: #e9fac8;
+  --oc-lime-1-rgb: 233, 250, 200;
+  --oc-lime-2: #d8f5a2;
+  --oc-lime-2-rgb: 216, 245, 162;
+  --oc-lime-3: #c0eb75;
+  --oc-lime-3-rgb: 192, 235, 117;
+  --oc-lime-4: #a9e34b;
+  --oc-lime-4-rgb: 169, 227, 75;
+  --oc-lime-5: #94d82d;
+  --oc-lime-5-rgb: 148, 216, 45;
+  --oc-lime-6: #82c91e;
+  --oc-lime-6-rgb: 130, 201, 30;
+  --oc-lime-7: #74b816;
+  --oc-lime-7-rgb: 116, 184, 22;
+  --oc-lime-8: #66a80f;
+  --oc-lime-8-rgb: 102, 168, 15;
+  --oc-lime-9: #5c940d;
+  --oc-lime-9-rgb: 92, 148, 13;
+
+  /* Yellow
+   *  ─────────────────────────────────── */
+  --oc-yellow-0: #fff9db;
+  --oc-yellow-0-rgb: 255, 249, 219;
+  --oc-yellow-1: #fff3bf;
+  --oc-yellow-1-rgb: 255, 243, 191;
+  --oc-yellow-2: #ffec99;
+  --oc-yellow-2-rgb: 255, 236, 153;
+  --oc-yellow-3: #ffe066;
+  --oc-yellow-3-rgb: 255, 224, 102;
+  --oc-yellow-4: #ffd43b;
+  --oc-yellow-4-rgb: 255, 212, 59;
+  --oc-yellow-5: #fcc419;
+  --oc-yellow-5-rgb: 252, 196, 25;
+  --oc-yellow-6: #fab005;
+  --oc-yellow-6-rgb: 250, 176, 5;
+  --oc-yellow-7: #f59f00;
+  --oc-yellow-7-rgb: 245, 159, 0;
+  --oc-yellow-8: #f08c00;
+  --oc-yellow-8-rgb: 240, 140, 0;
+  --oc-yellow-9: #e67700;
+  --oc-yellow-9-rgb: 230, 119, 0;
+
+  /* Orange
+   *  ─────────────────────────────────── */
+  --oc-orange-0: #fff4e6;
+  --oc-orange-0-rgb: 255, 244, 230;
+  --oc-orange-1: #ffe8cc;
+  --oc-orange-1-rgb: 255, 232, 204;
+  --oc-orange-2: #ffd8a8;
+  --oc-orange-2-rgb: 255, 216, 168;
+  --oc-orange-3: #ffc078;
+  --oc-orange-3-rgb: 255, 192, 120;
+  --oc-orange-4: #ffa94d;
+  --oc-orange-4-rgb: 255, 169, 77;
+  --oc-orange-5: #ff922b;
+  --oc-orange-5-rgb: 255, 146, 43;
+  --oc-orange-6: #fd7e14;
+  --oc-orange-6-rgb: 253, 126, 20;
+  --oc-orange-7: #f76707;
+  --oc-orange-7-rgb: 247, 103, 7;
+  --oc-orange-8: #e8590c;
+  --oc-orange-8-rgb: 232, 89, 12;
+  --oc-orange-9: #d9480f;
+  --oc-orange-9-rgb: 217, 72, 15;
+}
+
+/* ==== アイコン ==== */
+
+/* **** Icons **** */
+.icon {
+  background-position: 0% 50%;
+  background-repeat: no-repeat;
+  padding-left: 20px;
+}
+
+.icon-only {
+  background-position: 0% 50%;
+  background-repeat: no-repeat;
+  padding-left: 16px;
+  display: inline-block;
+  width: 0;
+  height: 16px;
+  overflow: hidden;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 8px;
+  vertical-align: middle;
+
+  &::after {
+    content: " ";
+  }
+}
+
+svg.icon-svg {
+  stroke: #343a40;
+
+  /* oc-gray-8 */
+  fill: none;
+  stroke-width: 1.5;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+svg.icon-svg-filled {
+  fill: #343a40;
+
+  /* oc-gray-8 */
+  stroke: none;
+}
+
+svg.s20 {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+svg.s18 {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+svg.s16 {
+  width: 1rem;
+  height: 1rem;
+}
+
+svg.s14 {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+svg.s12 {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* 背景画像のアイコンに置き換わる要素の SVG だけを隠す（説明欄の「編集」のように span で包まれたものも）。
+   対応するアイコンがないもの（タブのスクロール・リアクション）とプルダウンの矢印などは標準のまま */
+:is(.icon, .icon-only, [class*="icon-"]):not(.tab-left, .tab-right, .reaction-button) > svg.icon-svg,
+:is(.icon, .icon-only, [class*="icon-"]):not(.tab-left, .tab-right, .reaction-button) > span > svg.icon-svg {
+  display: none;
+
+  use[href$="#icon--checked"] {
+    stroke: var(--status-success);
+    stroke-width: 2px;
+  }
+}
+
+/* context-menu */
+#context-menu {
+  /* 標準の余白（8px）はインラインの SVG 用で、背景画像のアイコンと文字が重なるため、アイコンぶんの余白を取る。
+     アイコンのない項目（ステータスなど）とも文字の位置をそろえる（Redmine 5 はアイコンのない項目が 20px のため全項目に指定） */
+  li > a {
+    padding-inline-start: 28px;
+  }
+
+  li > a.icon {
+    background-position: 8px 50%;
+
+    .icon-label {
+      margin-inline-start: 0;
+    }
+  }
+
+  li.folder {
+    .icon-only:has(svg.icon-svg) {
+      display: none;
+    }
+
+    ul {
+      svg.icon-svg {
+        display: inline-block;
+      }
+
+      a.icon {
+        position: relative;
+
+        svg.icon-svg {
+          position: absolute;
+          top: 50%;
+          left: 8px;
+          width: 1rem;
+          height: 1rem;
+          margin: 0;
+          transform: translateY(-50%);
+        }
+      }
+
+      a[class*=icon-] svg.icon-svg {
+        display: none;
+      }
+    }
+  }
+}
+
+.icon-multiple {
+  background-image: url(../../../images/table_multiple.png);
+}
+
+.icon-file.text-x-c {
+  background-image: url(../../../images/files/c.png);
+}
+
+.icon-file.text-x-csharp {
+  background-image: url(../../../images/files/csharp.png);
+}
+
+.icon-file.text-x-java {
+  background-image: url(../../../images/files/java.png);
+}
+
+.icon-file.application-javascript {
+  background-image: url(../../../images/files/js.png);
+}
+
+.icon-file.text-x-php {
+  background-image: url(../../../images/files/php.png);
+}
+
+.icon-file.text-x-ruby {
+  background-image: url(../../../images/files/ruby.png);
+}
+
+.icon-file.text-xml {
+  background-image: url(../../../images/files/xml.png);
+}
+
+.icon-file.text-css {
+  background-image: url(../../../images/files/css.png);
+}
+
+.icon-file.text-html {
+  background-image: url(../../../images/files/html.png);
+}
+
+.icon-file.image-gif {
+  background-image: url(../../../images/files/image.png);
+}
+
+.icon-file.image-jpeg {
+  background-image: url(../../../images/files/image.png);
+}
+
+.icon-file.image-png {
+  background-image: url(../../../images/files/image.png);
+}
+
+.icon-file.image-tiff {
+  background-image: url(../../../images/files/image.png);
+}
+
+.icon-file.application-pdf {
+  background-image: url(../../../images/files/pdf.png);
+}
+
+.icon-add, .icon-add:not(:has(svg)) {
+  background-image: url(images/icons.svg#add_circle_default);
+}
+
+.icon-applications {
+  background-image: url(images/icons.svg#dashboard_customize_default);
+}
+
+.icon-edit, .icon-edit:not(:has(svg)) {
+  background-image: url(images/icons.svg#edit_default);
+}
+
+.icon-edit.icon-only, .icon-edit.icon-only:not(:has(svg)) {
+  background-image: url(images/icons.svg#edit_dark);
+}
+
+.controller-projects .boards .buttons .icon-edit,
+.controller-projects .boards .buttons .icon-edit:not(:has(svg)) {
+  background-image: url(images/icons.svg#edit_dark);
+}
+
+.icon-copy, .icon-copy:not(:has(svg)) {
+  background-image: url(images/icons.svg#content_copy_default);
+}
+
+.icon-duplicate, .icon-duplicate:not(:has(svg)) {
+  background-image: url(images/icons.svg#library_add_default);
+}
+
+.icon-del, .icon-del:not(:has(svg)) {
+  background-image: url(images/icons.svg#delete_danger);
+}
+
+.icon-move, .icon-move:not(:has(svg)) {
+  background-image: url(images/icons.svg#redo_default);
+}
+
+.icon-save, .icon-save:not(:has(svg)) {
+  background-image: url(images/icons.svg#save_default);
+}
+
+.icon-download, .icon-download:not(:has(svg)) {
+  background-image: url(images/icons.svg#download_default);
+}
+
+.icon-download.icon-only, .icon-download.icon-only:not(:has(svg)) {
+  background-image: url(images/icons.svg#download_dark);
+}
+
+.icon-cancel, .icon-cancel:not(:has(svg)) {
+  background-image: url(images/icons.svg#cancel_presentation_default);
+}
+
+.icon-folder, .icon-folder:not(:has(svg)) {
+  background-image: url(images/icons.svg#folder_default);
+}
+
+.open .icon-folder, .open .icon-folder:not(:has(svg)) {
+  background-image: url(images/icons.svg#folder_open_default);
+}
+
+.icon-package, .icon-package:not(:has(svg)) {
+  background-image: url(images/icons.svg#deployed_code_default);
+}
+
+.icon-user, .icon-user:not(:has(svg)) {
+  background-image: url(images/icons.svg#person_default);
+}
+
+.icon-user.my-project, .icon-user.my-project:not(:has(svg)) {
+  background-image: url(images/icons.svg#menu_person);
+}
+
+/* プロジェクト一覧（ボード）: プロジェクト名のリンクには下に 10px の余白がある。標準のテーマは後ろのアイコンの
+   SVG に同じ余白を付けて高さを揃えるが、このテーマは SVG を隠して背景画像を使うので、アイコン自体に付ける */
+#projects-index ul.projects div.root > .icon-only:is(.my-project, .icon-bookmarked-project) {
+  margin-block-end: 10px;
+}
+
+.icon-project, .icon-project:not(:has(svg)) {
+  background-image: url(images/icons.svg#widgets_default);
+}
+
+.icon-projects, .icon-projects:not(:has(svg)) {
+  background-image: url(images/icons.svg#widgets_default);
+}
+
+.icon-quote, .icon-quote:not(:has(svg)) {
+  background-image: url(images/icons.svg#format_quote_default);
+}
+
+.icon-only.icon-quote, .icon-only.icon-quote:not(:has(svg)) {
+  background-image: url(images/icons.svg#format_quote_dark);
+}
+
+.icon-help, .icon-help:not(:has(svg)) {
+  background-image: url(images/icons.svg#help_default);
+}
+
+.icon-attachment, .icon-attachment:not(:has(svg)) {
+  background-image: url(images/icons.svg#attach_file_default);
+}
+
+.icon-history, .icon-history:not(:has(svg)) {
+  background-image: url(images/icons.svg#history_default);
+}
+
+.icon-time-entry, .icon-time-entry:not(:has(svg)) {
+  background-image: url(images/icons.svg#schedule_default);
+}
+
+.icon-time, .icon-time:not(:has(svg)) {
+  background-image: url(images/icons.svg#schedule_default);
+}
+
+.icon-time-add, .icon-time-add:not(:has(svg)) {
+  background-image: url(images/icons.svg#alarm_add_default);
+}
+
+.icon-stats, .icon-stats:not(:has(svg)) {
+  background-image: url(images/icons.svg#leaderboard_default);
+}
+
+.icon-warning, .icon-warning:not(:has(svg)) {
+  background-image: url(images/icons.svg#warning_warning);
+}
+
+.icon-error, .icon-error:not(:has(svg)) {
+  background-image: url(images/icons.svg#error_danger);
+}
+
+.icon-fav, .icon-fav:not(:has(svg)) {
+  background-image: url(images/icons.svg#star_fill_watching);
+}
+
+.icon-fav-off, .icon-fav-off:not(:has(svg)) {
+  background-image: url(images/icons.svg#star_outline_default);
+}
+
+body:has(.reaction-button-wrapper) {
+  #content {
+    > .contextual:not(.contextual ~ .contextual) {
+      .icon-fav {
+        background-image: url(images/icons.svg#visibility_off_default);
+      }
+
+      .icon-fav-off {
+        background-image: url(images/icons.svg#visibility_default);
+      }
+    }
+  }
+}
+
+.icon-reload, .icon-reload:not(:has(svg)) {
+  background-image: url(images/icons.svg#refresh_default);
+}
+
+.icon-lock, .icon-lock:not(:has(svg)) {
+  background-image: url(images/icons.svg#lock_default);
+}
+
+.icon-locked, .icon-locked:not(:has(svg)) {
+  background-image: url(images/icons.svg#lock_default);
+}
+
+.icon-unlock, .icon-unlock:not(:has(svg)) {
+  background-image: url(images/icons.svg#lock_open_default);
+}
+
+.icon-checked, .icon-checked:not(:has(svg)) {
+  background-image: url(images/icons.svg#done_success);
+}
+
+.icon-report, .icon-report:not(:has(svg)) {
+  background-image: url(images/icons.svg#description_default);
+}
+
+.icon-comment, .icon-comment:not(:has(svg)) {
+  background-image: url(images/icons.svg#chat_bubble_default);
+}
+
+.icon-comment.icon-only, .icon-comment.icon-only:not(:has(svg)) {
+  background-image: url(images/icons.svg#chat_bubble_dark);
+}
+
+.icon-comments, .icon-comments:not(:has(svg)) {
+  background-image: url(images/icons.svg#chat_bubble_default);
+}
+
+.icon-summary, .icon-summary:not(:has(svg)) {
+  background-image: url(images/icons.svg#flash_on_default);
+}
+
+.icon-server-authentication, .icon-server-authentication:not(:has(svg)) {
+  background-image: url(images/icons.svg#key_default);
+}
+
+.icon-issue, .icon-issue:not(:has(svg)) {
+  background-image: url(images/icons.svg#ticket_default);
+}
+
+.icon-zoom-in, .icon-zoom-in:not(:has(svg)) {
+  background-image: url(images/icons.svg#zoom_in_default);
+}
+
+.icon-zoom-out, .icon-zoom-out:not(:has(svg)) {
+  background-image: url(images/icons.svg#zoom_out_default);
+}
+
+.icon-passwd, .icon-passwd:not(:has(svg)) {
+  background-image: url(images/icons.svg#lock_default);
+}
+
+.icon-arrow-right, .icon-arrow-right:not(:has(svg)) {
+  background-image: url(images/icons.svg#arrow_right_default);
+}
+
+.icon-test, .icon-test:not(:has(svg)) {
+  background-image: url(images/icons.svg#arrow_right_default);
+}
+
+.icon-sticky, .icon-sticky:not(:has(svg)) {
+  background-image: url(images/icons.svg#arrow_right_default);
+}
+
+.icon-email, .icon-email:not(:has(svg)) {
+  background-image: url(images/icons.svg#mail_default);
+}
+
+.icon-email-disabled, .icon-email-disabled:not(:has(svg)) {
+  background-image: url(images/icons.svg#mail_disabled_default);
+}
+
+.icon-email-add, .icon-email-add:not(:has(svg)) {
+  background-image: url(images/icons.svg#mail_add_default);
+}
+
+.icon-ok, .icon-ok:not(:has(svg)) {
+  background-image: url(images/icons.svg#done_success);
+}
+
+.icon-link-add, .icon-link-add:not(:has(svg)) {
+  background-image: url(images/icons.svg#add_circle_default);
+}
+
+.icon-link-break, .icon-link-break:not(:has(svg)) {
+  background-image: url(images/icons.svg#link_off_default);
+}
+
+.icon-link-break.icon-only, .icon-link-break.icon-only:not(:has(svg)) {
+  background-image: url(images/icons.svg#link_off_dark);
+}
+
+.icon-list, .icon-list:not(:has(svg)) {
+  background-image: url(images/icons.svg#format_list_bulleted_default);
+}
+
+.icon-close {
+  &, &:not(:has(svg)) {
+    background-image: url(images/icons.svg#close_dark);
+  }
+
+  &:hover, &:not(:has(svg)):hover {
+    background-image: url(images/icons.svg#close_dark);
+  }
+}
+
+.icon-settings, .icon-settings:not(:has(svg)) {
+  background-image: url(images/icons.svg#settings_default);
+}
+
+.icon-settings.icon-only, .icon-settings.icon-only:not(:has(svg)) {
+  background-image: url(images/icons.svg#settings_dark);
+}
+
+#list_organizations .icon-group:not(:has(svg)), .icon-group, .icon-group:not(:has(svg)) {
+  background-image: url(images/icons.svg#groups_3_default);
+}
+
+.icon-groupnonmember, .icon-groupnonmember:not(:has(svg)) {
+  background-image: url(images/icons.svg#groups_3_default);
+}
+
+.icon-groupanonymous, .icon-groupanonymous:not(:has(svg)) {
+  background-image: url(images/icons.svg#groups_3_default);
+}
+
+.icon-roles, .icon-roles:not(:has(svg)) {
+  background-image: url(images/icons.svg#encrypted_default);
+}
+
+.icon-issue-edit, .icon-issue-edit:not(:has(svg)) {
+  background-image: url(images/icons.svg#ticket_edit_default);
+}
+
+.icon-workflows, .icon-workflows:not(:has(svg)) {
+  background-image: url(images/icons.svg#flowsheet_default);
+}
+
+.icon-custom-fields, .icon-custom-fields:not(:has(svg)) {
+  background-image: url(images/icons.svg#design_services_default);
+}
+
+.icon-plugins, .icon-plugins:not(:has(svg)) {
+  background-image: url(images/icons.svg#extension_default);
+}
+
+.icon-issue-closed, .icon-issue-closed:not(:has(svg)) {
+  background-image: url(images/icons.svg#done_success);
+}
+
+.icon-issue-note, .icon-issue-note:not(:has(svg)) {
+  background-image: url(images/icons.svg#summarize_default);
+}
+
+.icon-changeset, .icon-changeset:not(:has(svg)) {
+  background-image: url(images/icons.svg#settings_default);
+}
+
+.icon-message, .icon-message:not(:has(svg)) {
+  background-image: url(images/icons.svg#chat_bubble_default);
+}
+
+.icon-reply, .icon-reply:not(:has(svg)) {
+  background-image: url(images/icons.svg#forum_default);
+}
+
+.icon-actions, .icon-actions:not(:has(svg)) {
+  background-image: url(images/icons.svg#more_dark);
+}
+
+.icon-sorted-asc, .icon-sorted-asc:not(:has(svg)) {
+  background-image: url(images/icons.svg#expand_more_default);
+}
+
+.icon-expanded,
+.icon-expanded:not(:has(svg)) {
+  background-image: url(images/icons.svg#expand_more_default);
+}
+
+.icon-collapsed, .icon-collapsed:not(:has(svg)) {
+  background-image: url(images/icons.svg#chevron_right_default);
+}
+
+.icon-wiki-page, .icon-wiki-page:not(:has(svg)) {
+  background-image: url(images/icons.svg#article_default);
+}
+
+.icon-document, .icon-document:not(:has(svg)) {
+  background-image: url(images/icons.svg#article_default);
+}
+
+.icon-news, .icon-news:not(:has(svg)) {
+  background-image: url(images/icons.svg#article_default);
+}
+
+.icon-add-bullet, .icon-add-bullet:not(:has(svg)) {
+  background-image: url(images/icons.svg#add_circle_default);
+}
+
+.icon-shared, .icon-shared:not(:has(svg)) {
+  background-image: url(images/icons.svg#link_default);
+}
+
+.icon-sort-handle, .icon-sort-handle:not(:has(svg)) {
+  background-image: url(images/icons.svg#drag_pan_default);
+}
+
+.icon-sort-handle.icon-only, .icon-sort-handle.icon-only:not(:has(svg)) {
+  background-image: url(images/icons.svg#drag_handle_vertical_dark);
+}
+
+.icon-bookmark, .icon-bookmark:not(:has(svg)) {
+  background-image: url(images/icons.svg#bookmark_fill_bookmarked);
+}
+
+.icon-bookmark-off,
+.icon-bookmark-off:not(:has(svg)) {
+  background-image: url(images/icons.svg#bookmark_outline_default);
+}
+
+.icon-bookmarked-project,
+.icon-bookmarked-project:not(:has(svg)) {
+  background-image: url(images/icons.svg#bookmark_fill_bookmarked);
+}
+
+.icon-sorted-desc, .icon-sorted-desc:not(:has(svg)) {
+  background-image: url(images/icons.svg#expand_less_default);
+}
+
+.icon-toggle-plus, .icon-toggle-plus:not(:has(svg)) {
+  background-image: url(images/icons.svg#unfold_more_dark);
+}
+
+.icon-toggle-minus, .icon-toggle-minus:not(:has(svg)) {
+  background-image: url(images/icons.svg#unfold_less_dark);
+}
+
+.icon-clear-query, .icon-clear-query:not(:has(svg)) {
+  background-image: url(images/icons.svg#cancel_presentation_danger);
+}
+
+.icon-import, .icon-import:not(:has(svg)) {
+  background-image: url(images/icons.svg#input_default);
+}
+
+.icon-file, .icon-file:not(:has(svg)) {
+  background-image: url(images/icons.svg#description_default);
+}
+
+.icon-file.text-plain, .icon-file.text-plain:not(:has(svg)) {
+  background-image: url(images/icons.svg#description_default);
+}
+
+.icon-file.application-zip, .icon-file.application-zip:not(:has(svg)) {
+  background-image: url(images/icons.svg#folder_zip_default);
+}
+
+.icon-file.application-gzip, .icon-file.application-gzip:not(:has(svg)) {
+  background-image: url(images/icons.svg#folder_zip_default);
+}
+
+/* 添付ファイル一覧（チケット詳細の「ファイル」セクション等）のファイル名リンクは
+   コアのファイルタイプ別 SVG スプライトアイコンをそのまま表示する */
+.attachments {
+  table {
+    a.icon-attachment {
+      padding-left: 0;
+      background-image: none;
+
+      svg.icon-svg {
+        display: inline-block;
+        stroke: var(--txt-caption);
+        stroke-width: 1.5;
+        width: 1.125rem;
+        height: 1.125rem;
+      }
+    }
+  }
+}
+
+.icon-copy-link, .icon-copy-link:not(:has(svg)) {
+  background-image: url(images/icons.svg#content_copy_default);
+}
+
+.sort-handle.ajax-loading, .sort-handle.ajax-loading:not(:has(svg)) {
+  background-image: url(images/spinner_default.gif);
+  background-size: 16px;
+}
+
+button.tab-left, button.tab-left:not(:has(svg)) {
+  background-image: url(images/icons.svg#chevron_left_onFill);
+}
+
+button.tab-right, button.tab-right:not(:has(svg)) {
+  background-image: url(images/icons.svg#chevron_right_onFill);
+}
+
+/* filter toggle icon */
+.toggle-multiselect.icon-toggle-plus, .toggle-multiselect.icon-toggle-minus {
+  background-size: 20px;
+}
+
+/* issues */
+a.group:has(svg.icon-svg) {
+  background-image: url(images/icons.svg#groups_3_default);
+  background-position: 0% 50%;
+  background-repeat: no-repeat;
+  padding-left: 20px;
+}
+
+/* 6.0のジャーナルのコメント（icon-onlyが外れたことによりアイコンの色がdefaultになったのでその対応） */
+.journal .journal-actions .icon-comment {
+  background-image: url(images/icons.svg#chat_bubble_dark);
+}
+
+/* フォーラムコメントの各種アイコンがdarkにならない問題への対応 */
+.controller-messages {
+  .reply {
+    .contextual {
+      .icon-comment {
+        background-image: url(images/icons.svg#chat_bubble_dark);
+      }
+
+      .icon-edit {
+        background-image: url(images/icons.svg#edit_dark);
+      }
+    }
+  }
+
+  /* 6.1からのHTML構造変更に対応 */
+  .journal-meta .icon-edit {
+    background-image: url(images/icons.svg#edit_dark);
+  }
+}
+
+/* 整形済みテキストのコピーに対応 */
+.pre-wrapper {
+  .copy-pre-content-link {
+    background-image: url(images/icons.svg#content_copy_default);
+    background-size: 12px;
+
+    /* 整形済みテキストのコピー後のインタラクション（アイコンがチェックに変わる）に対応 */
+    &:has(svg use[href$="#icon--checked"]) {
+      background-image: url(images/icons.svg#done_success);
+    }
+  }
+}
+
+/* 6.1.2から、利用できる項目-選択された項目の入れ替えUIがsvgに変更されたので、svgをそのまま利用する */
+[type=button].move-right svg, [type=button].move-left svg {
+  display: block;
+}
+
+/* PDFプレビュー */
+.pdf-full-view-link {
+  .icon-maximize {
+    padding-left: 0;
+
+    svg {
+      display: inline-block;
+    }
+  }
+}
+
+/* View Customize */
+.icon-view_customize {
+  background-image: url(images/icons.svg#mobile_gear_default);
+}
+
+.icon-view_customize-disable {
+  background-image: url(images/icons.svg#close_danger);
+}
+
+.icon-view_customize-enable {
+  background-image: url(images/icons.svg#done_success);
+}
+
+/* 管理メニュー：Webhook・Gantrix の設定 */
+#admin-menu {
+  a.webhooks {
+    background-image: url(images/icons.svg#webhook_default);
+  }
+
+  a.gantrix-settings {
+    background-image: url(images/icons.svg#gantrix_default);
+  }
+
+  /* 文字をアイコンの右 8px にそろえる。ラベルの span（Redmine 6 以降、左余白 4px）の有無と、標準の余白
+     （Redmine 5 の選択中は 20px、スマートフォン幅は Redmine 5 が 32px・6 と 7 が 0。どれも一部 !important）によらない */
+  ul li > a.icon {
+    padding-inline-start: 24px !important;
+    background-position: 0 50%;
+
+    .icon-label {
+      margin-inline-start: 0;
+    }
+  }
+}
+
+/* 折りたたみの見出し（フィルタ・オプション）：Redmine 5 の余白（18px、アイコンは 4px）は 16px のアイコンと文字が接するため、
+   Redmine 6 以降と同じ位置にする */
+fieldset.collapsible > legend.icon {
+  padding-inline-start: 20px;
+  background-position: 0 50%;
+}
+
+/* カレンダーのバージョン：セルが狭いと名前が折り返し、行の中央に置いたアイコンと重なるため、全行を字下げする
+   （SVG のアイコンを使う Redmine 6 以降は標準のまま） */
+table.cal span.icon:not(:has(svg)) {
+  display: inline-block;
+}
+
+/* 「…」のメニュー：標準の余白（8px）はインラインの SVG 用で、背景画像のアイコンと文字が重なるため、アイコンぶんの余白を取る */
+:is(.contextual, .journal-actions) .drdn-items > a.icon {
+  padding-inline-start: 28px;
+  background-position: 8px 50%;
+}
+
+/* スマートフォン幅：標準のボタンの余白がアイコンより狭いため、アイコンぶんの余白を取る */
+@media screen and (max-width: 899px) {
+  :is(#content > .contextual, p.buttons) a.icon:not(.icon-only) {
+    padding-inline-start: 28px;
+    background-position: 8px 50%;
+  }}
+
+/* ==== 色の上書き ==== */
+
+:root {
+  --fonts-main: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  --color-current-marker: var(--product-default);
+}
+
+body {
+  font-family: var(--fonts-main);
+  color: var(--txt-default);
+}
+
+/* 上部メニューとヘッダー。Redmine 7 の responsive.css はモバイル幅で
+   var(--color-header-background)/--color-top-menu-background を再指定するため、
+   ここで変数ごと上書きする（Redmine 5・6 は色を直接指定しているため直接上書きも併用） */
+:root {
+  --color-top-menu-background: var(--neutral-black-900);
+  --color-header-background: var(--neutral-black-800);
+}
+
+#top-menu {
+  background: var(--neutral-black-900);
+}
+
+#header {
+  background: var(--neutral-black-800);
+}
+
+/* スマートフォン幅：Redmine 5・6 の responsive.css が色を直接指定し、
+   body.has-main-menu の padding-block-end: 2rem も残るためここで上書きする */
+@media screen and (max-width: 899px) {
+  #header {
+    background-color: var(--neutral-black-800) !important;
+    padding-block-end: 0 !important;
+  }
+
+  .flyout-menu {
+    background-color: var(--neutral-black-900) !important;
+  }
+
+  .flyout-menu h3 {
+    background-color: var(--neutral-black-800) !important;
+    border-color: var(--neutral-black-800) !important;
+  }
+
+  /* プロジェクトジャンプのキャレットは transform で反転した ^ を使うため、垂直位置を
+     テキスト（line-height 40px）に合わせる。中央に置かないと下にずれて見える */
+  /* Redmine 標準は ^ を scale(1,-.8) で反転したものを absolute の静的位置に置くため
+     プロジェクト名より下にずれる。高さ 40px の行ボックスをやめて flex 中央に揃える */
+  #project-jump .drdn-trigger::before {
+    inset-block-start: 0;
+    block-size: 100%;
+    display: flex;
+    align-items: center;
+    transform: none !important;
+    scale: 0.8 0.8;
+    line-height: 1;
+    /* the ^ glyph sits at the top of the font, so push it down to sit on the text's midline */
+    padding-block-start: 0.35em !important;
+  }
+
+  #project-jump.expanded .drdn-trigger::before {
+    scale: 0.8 -0.8;
+    padding-block-start: 0.35em !important;
+  }
+
+  /* Redmine の responsive.css は 64px のヘッダーを前提にするが、プロジェクト名 1 行では大きすぎるため
+     48px に下げる。64px を参照する全ての箇所をまとめて置き換える */
+  #header {
+    block-size: 48px !important;
+  }
+
+  #main {
+    padding-block-start: 48px !important;
+  }
+
+
+
+  #project-jump.drdn {
+    block-size: 48px !important;
+    padding-block: 0 !important;
+    display: flex !important;
+    align-items: center;
+  }
+
+  /* the 50px trigger on a 40px line-height pushes the text off-center; size it to the content */
+  #project-jump .drdn-trigger {
+    block-size: auto !important;
+    line-height: 1 !important;
+    padding-block: 0 !important;
+    /* hide the dark tap highlight Chrome shows on touch */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #project-jump .drdn-content {
+    inset-block-start: 48px !important;
+  }
+
+  /* the ≡ glyph sits high in its line box; flex-center it inside the 48px button instead */
+  .mobile-toggle-button {
+    block-size: 48px !important;
+    line-height: 1 !important;
+
+    &::after {
+      display: flex !important;
+      block-size: 100%;
+      align-items: center;
+      justify-content: center;
+      /* the glyph is drawn above the middle of the em box */
+      padding-block-start: 0.15em !important;
+    }
+  }
+
+  .flyout-menu__search {
+    block-size: 48px !important;
+    line-height: 40px !important;
+  }
+
+  div#sticky-issue-header {
+    inset-block-start: 48px !important;
+  }
+
+  .controller-issues.action-show div.wiki a[name],
+  .controller-issues.action-show #history div[id^="note-"],
+  .controller-issues.action-show #history div[id^="change-"],
+  .controller-issues.action-show #update {
+    scroll-margin-block-start: 98px !important;
+  }
+
+  /* Redmine 標準は .flyout-is-active でコンテンツ全体を左に 250px ずらして
+     メニューを「押し出す」方式。そのためコンテンツが移動して見えるので、
+     コンテンツは固定のままメニューを画面右端から重ねて表示するフローティングに変える。
+     ハンバーガーは固定ヘッダー内なので、× もクリックした位置に出る。 */
+  .flyout-menu {
+    position: fixed !important;
+    /* sit below the 48px header so it does not cover the × toggle button */
+    inset-block-start: 48px !important;
+    inset-block-end: 0 !important;
+    inset-inline-end: 0 !important;
+    translate: 250px 0;
+    transition: translate 0.2s ease-out;
+    z-index: 100;
+    block-size: auto !important;
+    overflow-y: auto;
+    box-shadow: -4px 0 12px rgb(0 0 0 / 40%);
+  }
+
+  .flyout-is-active .flyout-menu {
+    translate: 0 0;
+  }
+
+  .flyout-is-active #wrapper,
+  .flyout-is-active #header {
+    inset-inline-end: 0 !important;
+  }
+
+  /* the toggle button lives in the fixed header, so it keeps its position;
+     the × replaces the ≡ at the same spot the user clicked */
+  .flyout-is-active .mobile-toggle-button::after {
+    content: '\\00D7';
+  }
+
+  /* dim the page behind the floating menu; clicking it still closes the menu
+     (Redmine's own click handler on #wrapper) */
+  .flyout-is-active #main::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgb(0 0 0 / 35%);
+    z-index: 50;
+  }
+
+  /* keep the vertical scrollbar while the flyout is open (Redmine sets
+     html.flyout-is-active to overflow:hidden, which removes the scrollbar and
+     shifts the whole page right). scrollbar-gutter reserves the space so the
+     page does not move at all. */
+  html {
+    scrollbar-gutter: stable;
+  }
+}
+
+/* ヘッダーを少し低く（PC 幅のみ。スマホ幅は Redmine の responsive.css のまま） */
+@media screen and (min-width: 900px) {
+  /* タイトルと検索欄を同じ高さにして縦の中央にそろえる（Redmine 7 の作り。5・6 も同じにする） */
+  #header h1, #quick-search { min-block-size: 2.25rem; }
+  #header h1 { display: flex; flex-direction: column; justify-content: center; font-size: 1.25rem; line-height: 1.15; }
+  #quick-search { display: flex; align-items: center; }
+  /* 検索欄の上下の余白をそろえる（上はヘッダーの余白、下は見出しの余白）。Redmine 5・6 の最小の高さは使わない */
+  #header { min-height: 0; padding-block-start: 7px; }
+  #header h1 { margin-block: 0 7px; padding-block: 0; }
+}
+
+a, a:link, a:visited {
+  color: var(--txt-link);
+}
+
+a:hover, a:active {
+  color: var(--product-hover);
+}
+
+#content :is(h1, h2, h3, h4, h5, h6), #sidebar h3 {
+  color: var(--txt-default);
+}
+
+/* 上部メニュー・アカウントメニューのアイコン（svg をマスクにして文字色で塗る） */
+/* :where() で詳細度を下げ、下の項目ごとのアイコン指定が勝つようにする */
+:where(#top-menu > ul, #top-menu .top-menu__links > ul, #account > ul, #account .dropdown-content ul) > li > a::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-inline-end: 4px;
+  vertical-align: -3px;
+  background-color: currentColor;
+  mask: no-repeat center / contain url(images/icons.svg#oss_dark);
+}
+
+#top-menu {
+  a.home::before { mask-image: url(images/icons.svg#home_dark); }
+  a.my-page::before { mask-image: url(images/icons.svg#menu_my_page); }
+  a.projects::before { mask-image: url(images/icons.svg#menu_projects); }
+  a.gantrix-portfolio::before { mask-image: url(images/icons.svg#menu_report); }
+  a.administration::before { mask-image: url(images/icons.svg#menu_admin); }
+  a.help::before { mask-image: url(images/icons.svg#help_default); }
+}
+
+#account {
+  a.my-profile::before { mask-image: url(images/icons.svg#menu_person); }
+  a.my-account::before { mask-image: url(images/icons.svg#menu_wrench); }
+  a.logout::before { mask-image: url(images/icons.svg#menu_logout); }
+  a.login::before { mask-image: url(images/icons.svg#login_dark); }
+  a.register::before { mask-image: url(images/icons.svg#person_add_dark); }
+}
+
+/* プロジェクトのタブ */
+#main-menu {
+  background: var(--bg-secondary);
+
+  li a {
+    background-color: transparent;
+    color: var(--txt-default);
+
+    &:hover {
+      background-color: var(--bg-tertiary);
+      color: var(--txt-default);
+    }
+
+    &.selected, &.selected:hover {
+      color: var(--txt-default);
+    }
+
+    &.new-object {
+      background-color: var(--bg-tertiary);
+    }
+  }
+
+  .menu-children li a:hover {
+    background-color: var(--product-default);
+  }
+}
+
+/* サイドバー */
+#sidebar {
+  background: var(--bg-secondary);
+  border-inline-start-color: var(--border-divider);
+
+  /* 選択中の項目は標準で左の余白が 6px になり、背景画像のアイコンと文字が重なるため、アイコンを余白の内側に置く */
+  a.icon.selected {
+    background-position: 6px 50%;
+    padding-inline-start: 26px;
+  }
+
+  #admin-menu ul li > a.icon.selected {
+    background-position: 6px 50%;
+    padding-inline-start: 30px !important;
+  }
+}
+
+/* 一覧 */
+table.list th, .table-list-header {
+  background-color: var(--bg-secondary);
+  border-block-end-color: var(--border-default);
+}
+
+/* 送信ボタン */
+input[type="submit"], button[type="submit"] {
+  background-color: var(--product-default);
+  border: 1px solid var(--product-default);
+  color: var(--txt-onFill);
+
+  &:hover {
+    background-color: var(--product-hover);
+  }
+}
+
+#footer {
+  color: var(--txt-caption);
+}
+
+/* 本文の中のリンクは下線で見分ける（色だけでは見分けにくい: Lighthouse の link-in-text-block） */
+#footer a, p.other-formats a {
+  text-decoration: underline;
+}
+
+/* 一覧の件数・他の形式: Redmine の灰色は薄すぎるため */
+p.other-formats, span.pagination {
+  color: var(--txt-caption);
+}

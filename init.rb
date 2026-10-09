@@ -56,4 +56,38 @@ end
 Rails.application.config.after_initialize do
   Issue.include RedmineGantrix::IssueHooks
   TrashedIssue.include RedmineGantrix::TrashHooks if Redmine::Plugin.installed?(:redmine_issue_trash)
+  # the project-jump links carry title="project name", which shows as a native
+  # tooltip on hover/tap; drop it because the theme renders the full name anyway
+  ApplicationHelper.prepend RedmineGantrix::JumpBoxPatch
+end
+
+# Bundled theme "gantrix" (themes/gantrix): Redmine's default theme with the colors and icons of lychee_theme_basic.
+# Redmine only looks for themes in its own directories, so on Redmine 6+ add this plugin's themes directory to the
+# scan (before the theme assets are registered in config/initializers/30-redmine.rb), and on Redmine 5, where themes
+# are static files under public/themes, copy it there.
+gantrix_themes = File.join(__dir__, 'themes')
+if Redmine::VERSION::MAJOR >= 6
+  Redmine::Themes.singleton_class.prepend(Module.new do
+    private
+
+    define_method(:scan_themes) do
+      bundled = Dir.glob("#{gantrix_themes}/*").select { |dir| File.exist?("#{dir}/stylesheets/application.css") }
+      (super() + bundled.map { |dir| Redmine::Themes::Theme.new(dir) }).uniq(&:id).sort
+    end
+  end)
+  Redmine::Themes.rescan
+else
+  begin
+    Dir.glob("#{gantrix_themes}/*").each do |dir|
+      target = Rails.public_path.join('themes', File.basename(dir))
+      # the contents, over what is there: rm_rf fails silently on a directory another user made (rails runner
+      # as root), and cp_r of a directory into an existing one would copy it below (themes/gantrix/gantrix)
+      FileUtils.mkdir_p(target)
+      FileUtils.cp_r("#{dir}/.", target, remove_destination: true)
+      css = File.join(target, 'stylesheets', 'application.css')
+      File.write(css, File.read(css).sub('@import url(/application.css);', '@import url(../../../stylesheets/application.css);'))
+    end
+  rescue SystemCallError => e
+    Rails.logger.warn("Gantrix: could not copy the bundled theme to public/themes: #{e.message}")
+  end
 end
