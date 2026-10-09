@@ -1,0 +1,69 @@
+# Keep compatible with the oldest supported Redmine (5.0: Ruby 2.5, Rails 6.1).
+plugins:
+  - rubocop-rails
+  - rubocop-performance
+
+AllCops:
+  TargetRubyVersion: 2.5
+  TargetRailsVersion: 6.1
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - 'docker/dev/companions/**/*'
+    - 'docker/dev/.test_logs/**/*'
+    - 'node_modules/**/*'
+    - 'vendor/**/*'
+
+Style/Documentation:
+  Enabled: false
+
+Layout/LineLength:
+  Max: 160
+
+# The existing code is not split up for the size and complexity metrics.
+Metrics:
+  Enabled: false
+
+# Short parameter names such as a, b, d and v are used for dates and values.
+Naming/MethodParameterName:
+  Enabled: false
+
+Naming/PredicateMethod:
+  AllowedMethods:
+    - truthy
+
+# Reads alongside the settings reader next to it.
+Rails/Delegate:
+  Exclude:
+    - 'app/models/gantrix/holiday_source.rb'
+
+# The demo data seeding script sets dates without callbacks on purpose.
+Rails/SkipsModelValidations:
+  Exclude:
+    - 'docker/**/*'
+
+# Redmine works with dates and times in the server's time zone (and User#today).
+Rails/Date:
+  Enabled: false
+Rails/TimeZone:
+  Enabled: false
+
+# find_each ignores the order of the relation.
+Rails/FindEach:
+  Enabled: false
+
+# Redmine 5.0 has no ApplicationJob.
+Rails/ApplicationJob:
+  Enabled: false
+
+# Classes are defined in the compact style (class Gantrix::Tree).
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+Style/MultilineBlockChain:
+  Enabled: false
+
+# SQLite3 is not loaded on PostgreSQL or MySQL, so compare the class name.
+Style/ClassEqualityComparison:
+  Exclude:
+    - 'app/models/gantrix/holiday_job.rb'

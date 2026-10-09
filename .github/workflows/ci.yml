@@ -1,0 +1,46 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+      - name: Install Ruby linters
+        run: >-
+          gem install --no-document
+          rubocop:1.91.0 rubocop-rails:2.38.0 rubocop-performance:1.27.0
+          brakeman:8.1.0
+      - name: RuboCop
+        run: rubocop
+      - name: Theme CSS is built from tools/theme
+        run: python3 tools/build_theme_icons.py --check
+      - name: Brakeman
+        run: brakeman --force --no-pager --exit-on-warn --exit-on-error --skip-files docker/ .
+
+  redmine:
+    name: redmine (${{ matrix.redmine-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        redmine-version: ['5.0', '5.1', '6.0', '6.1', '7.0']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1
+          npx playwright install --with-deps chromium
+      - name: Run plugin checks on Redmine ${{ matrix.redmine-version }}
+        run: KEEP=0 docker/dev/test_all.sh "$REDMINE_VERSION"
+        env:
+          REDMINE_VERSION: ${{ matrix.redmine-version }}
