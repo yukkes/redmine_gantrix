@@ -1,0 +1,20 @@
+<% html_title l(:label_gantrix_portfolio) %>
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag 'gantrix', plugin: 'redmine_gantrix', media: 'all' %>
+  <%= javascript_include_tag 'gantrix/core', 'gantrix/portfolio', plugin: 'redmine_gantrix', defer: true %>
+<% end %>
+
+<h2><%= l(:label_gantrix_portfolio) %></h2>
+<%= content_tag :div, '', id: 'gantrix-portfolio', data: {
+      config: {
+        tab: @tab,
+        pages: { projects: gantrix_portfolio_path, workload: gantrix_workload_path },
+        dataUrl: gantrix_api_portfolio_path,
+        workloadUrl: gantrix_api_workload_path,
+        csvUrl: gantrix_portfolio_path(format: 'csv'),
+        issuesUrl: issues_path,
+        projectUrl: project_gantrix_path(project_id: '__id__'),
+        reportUrl: project_gantrix_report_path(project_id: '__id__'),
+        messages: gantrix_messages
+      }.to_json
+    } %>

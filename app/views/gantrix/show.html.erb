@@ -1,0 +1,21 @@
+<% html_title l(:label_gantrix) %>
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag 'gantrix', plugin: 'redmine_gantrix', media: 'all' %>
+  <%= gantrix_icon_font_tag %>
+  <%= javascript_include_tag 'gantrix/core', 'gantrix/grid', 'gantrix/timeline', 'gantrix/app', plugin: 'redmine_gantrix', defer: true %>
+<% end %>
+
+<h2><%= l(:label_gantrix) %></h2>
+
+<%= content_tag :div, '', id: 'gantrix-schedule', data: {
+      config: {
+        project: @project.identifier,
+        projectName: @project.name,
+        dataUrl: project_gantrix_api_schedule_path(project_id: @project),
+        baseUrl: "#{project_gantrix_path(project_id: @project)}/api",
+        issuesUrl: issues_path,
+        newQueryUrl: new_project_query_path(@project, set_filter: 1),
+        view: Gantrix::Preferences.get(User.current, @project),
+        messages: gantrix_messages
+      }.to_json
+    } %>

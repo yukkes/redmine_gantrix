@@ -1,0 +1,16 @@
+<% html_title l(:label_gantrix_dashboard) %>
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag 'gantrix', plugin: 'redmine_gantrix', media: 'all' %>
+  <%= javascript_include_tag 'gantrix/core', 'gantrix/dashboard', plugin: 'redmine_gantrix', defer: true %>
+<% end %>
+
+<h2><%= l(:label_gantrix_dashboard) %></h2>
+<%= content_tag :div, '', id: 'gantrix-dashboard', data: {
+      config: {
+        dataUrl: project_gantrix_api_dashboard_path(project_id: @project),
+        apiUrl: gantrix_api_url(@project),
+        scheduleUrl: gantrix_schedule_url(@project),
+        issuesUrl: issues_path,
+        messages: gantrix_messages
+      }.to_json
+    } %>

@@ -1,0 +1,7 @@
+<p><%= l(:mail_body_gantrix_ready, predecessor: "##{@predecessor.id} #{@predecessor.subject}") %></p>
+<p><%= link_to "##{@issue.id} #{@issue.subject}", @issue_url %></p>
+<ul>
+  <li><%= l(:field_start_date) %>: <%= format_date(@issue.start_date) %></li>
+  <li><%= l(:field_due_date) %>: <%= format_date(@issue.due_date) %></li>
+</ul>
+<p><%= link_to l(:label_gantrix), @schedule_url %></p>

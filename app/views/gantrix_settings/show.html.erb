@@ -1,0 +1,147 @@
+<% html_title l(:label_gantrix_settings) %>
+<h2><%= l(:label_gantrix_settings) %></h2>
+
+<%= form_tag(gantrix_settings_path, method: :patch, class: 'gantrix-settings') do %>
+  <fieldset class="box">
+    <legend><%= l(:label_gantrix_holiday_source) %></legend>
+    <p>
+      <label><%= radio_button_tag 'holiday_source', 'jp', @source == 'jp' %> <%= l(:label_gantrix_source_jp) %></label>
+      <br><em class="info"><%= l(:text_gantrix_source_jp) %></em>
+    </p>
+    <p>
+      <label><%= radio_button_tag 'holiday_source', 'imported', @source == 'imported', disabled: @imported.empty? %> <%= l(:label_gantrix_source_imported) %></label>
+      <br><em class="info"><%= @imported.empty? ? l(:text_gantrix_source_imported_empty) : l(:text_gantrix_source_imported) %></em>
+    </p>
+    <p>
+      <label><%= radio_button_tag 'holiday_source', 'none', @source == 'none' %> <%= l(:label_gantrix_source_none) %></label>
+      <br><em class="info"><%= l(:text_gantrix_source_none) %></em>
+    </p>
+  </fieldset>
+  <fieldset class="box">
+    <legend><%= l(:label_gantrix_extra_holidays) %></legend>
+    <p>
+      <%= text_area_tag 'extra_holidays', @settings['extra_holidays'], rows: 6, cols: 20, placeholder: "2026-12-29" %><br>
+      <em class="info"><%= l(:text_gantrix_extra_holidays) %></em>
+    </p>
+  </fieldset>
+  <fieldset class="box">
+    <legend><%= l(:label_gantrix_notifications) %></legend>
+    <p>
+      <%= hidden_field_tag 'notify_successors', '0', id: nil %>
+      <label><%= check_box_tag 'notify_successors', '1', @settings['notify_successors'].to_s != '0' %> <%= l(:label_gantrix_notify_successors) %></label><br>
+      <em class="info"><%= l(:text_gantrix_notify_successors) %></em>
+    </p>
+    <p>
+      <label><%= l(:label_gantrix_hours_per_day) %>
+        <%= number_field_tag 'hours_per_day', Gantrix::Preferences.hours_per_day, min: 1, max: 24, step: 0.5, style: 'width:5em' %></label>
+    </p>
+  </fieldset>
+  <fieldset class="box">
+    <legend><%= l(:label_gantrix_status_colors) %></legend>
+    <p><em class="info"><%= l(:text_gantrix_status_colors) %></em></p>
+    <% Gantrix::StatusColors.map.each do |id, color| %>
+      <p><label><%= color_field_tag "status_colors[#{id}]", color, id: "status_color_#{id}" %> <%= IssueStatus.find_by(id: id)&.name %></label></p>
+    <% end %>
+    <p><label><%= check_box_tag 'status_colors_reset', '1', false %> <%= l(:label_gantrix_status_colors_reset) %></label></p>
+  </fieldset>
+  <fieldset class="box">
+    <legend><%= l(:label_gantrix_portfolio) %></legend>
+    <p><em class="info"><%= l(:text_gantrix_signal) %></em></p>
+    <p>
+      <label><%= l(:label_gantrix_signal_red_below) %> <%= number_field_tag 'signal_red', Gantrix::Portfolio.thresholds[:red], min: 0.1, max: 2, step: 0.01, style: 'width:5em' %></label>
+      <label><%= l(:label_gantrix_signal_amber_below) %> <%= number_field_tag 'signal_amber', Gantrix::Portfolio.thresholds[:amber], min: 0.1, max: 2, step: 0.01, style: 'width:5em' %></label>
+      <label><%= l(:label_gantrix_signal_overdue) %> <%= number_field_tag 'signal_overdue', Gantrix::Portfolio.thresholds[:overdue], min: 1, max: 999, style: 'width:5em' %></label>
+    </p>
+    <p><%= l(:label_gantrix_pm_roles) %>
+      <% Role.givable.sorted.each do |r| %>
+        <label><%= check_box_tag 'pm_role_ids[]', r.id, Array(@settings['pm_role_ids']).map(&:to_i).include?(r.id), id: "pm_role_#{r.id}" %> <%= r.name %></label>
+      <% end %>
+      <%= hidden_field_tag 'pm_role_ids[]', '', id: nil %>
+      <br><em class="info"><%= l(:text_gantrix_pm_roles) %></em>
+    </p>
+  </fieldset>
+  <%= submit_tag l(:button_save) %>
+<% end %>
+
+<h3><%= l(:label_gantrix_cao_csv) %></h3>
+<div class="box">
+  <p>
+    <% if @settings['jp_cache_fetched_at'].present? && @jp_count.any? %>
+      <%= l(:text_gantrix_cao_status,
+            fetched: format_time(Gantrix::HolidaySource.time(@settings['jp_cache_fetched_at'])),
+            count: @jp_count.size, from: @jp_count.keys.min.year, to: @jp_count.keys.max.year) %>
+    <% else %>
+      <%= l(:text_gantrix_cao_not_fetched) %>
+    <% end %>
+  </p>
+  <% if @settings['jp_cache_error'].present? %>
+    <p class="conflict"><%= l(:error_gantrix_cao_fetch, message: @settings['jp_cache_error']) %></p>
+  <% end %>
+  <p><em class="info"><%= l(:text_gantrix_cao_auto) %> <%= link_to Gantrix::HolidaySource::CAO_URL, Gantrix::HolidaySource::CAO_URL, class: 'external' %></em></p>
+  <%= button_to l(:button_gantrix_cao_fetch), gantrix_settings_refresh_path, method: :post %>
+</div>
+
+<h3><%= l(:label_gantrix_csv_import) %></h3>
+<div class="box">
+  <p><%= l(:text_gantrix_csv_format) %></p>
+  <pre>date,name
+2027-01-01,New Year's Day
+2027-07-05,Independence Day (observed)</pre>
+  <% if @imported.any? %>
+    <p>
+      <%= l(:text_gantrix_csv_current, name: @settings['imported_name'], count: @imported.size,
+            from: @imported.keys.min, to: @imported.keys.max) %>
+    </p>
+  <% end %>
+  <%= form_tag(gantrix_settings_import_path, multipart: true) do %>
+    <p>
+      <%= file_field_tag 'file', accept: '.csv,text/csv' %>
+      <%= text_field_tag 'name', nil, placeholder: l(:label_gantrix_csv_name), size: 24 %>
+      <label><%= check_box_tag 'use_imported', '1', true %> <%= l(:label_gantrix_csv_use) %></label>
+      <%= submit_tag l(:button_gantrix_csv_import) %>
+    </p>
+  <% end %>
+  <% if @imported.any? %>
+    <%= button_to l(:button_gantrix_csv_clear), gantrix_settings_import_path, method: :delete,
+                  data: { confirm: l(:text_are_you_sure) } %>
+  <% end %>
+</div>
+
+<h3><%= l(:label_gantrix_custom_fields) %></h3>
+<div class="box">
+  <ul>
+    <% @fields.each do |key, field| %>
+      <li>
+        <% if field %>
+          <%= link_to field.name, edit_custom_field_path(field) %>（<%= field.class.name.sub('CustomField', '') %>, <%= field.field_format %>）
+        <% else %>
+          <%= key %>: <%= l(:text_gantrix_cf_missing) %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+  <p><em class="info"><%= l(:text_gantrix_cf_description) %></em></p>
+</div>
+
+<h3><%= l(:label_gantrix_holiday_list) %></h3>
+<p>
+  <%= link_to "« #{@year - 1}", gantrix_settings_path(year: @year - 1) %>
+  <strong><%= @year %></strong>
+  <%= link_to "#{@year + 1} »", gantrix_settings_path(year: @year + 1) %>
+</p>
+<% if @holidays.empty? %>
+  <p class="nodata"><%= l(:label_no_data) %></p>
+<% else %>
+  <table class="list">
+    <thead><tr><th><%= l(:label_date) %></th><th><%= l(:field_name) %></th><th><%= l(:label_gantrix_origin) %></th></tr></thead>
+    <tbody>
+      <% @holidays.each do |date, (name, origin)| %>
+        <tr>
+          <td><%= format_date(date) %> (<%= day_name(date.wday) %>)</td>
+          <td><%= name %></td>
+          <td><%= l("label_gantrix_origin_#{origin}") %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

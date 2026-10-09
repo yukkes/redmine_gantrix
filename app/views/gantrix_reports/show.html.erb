@@ -1,0 +1,15 @@
+<% html_title l(:label_gantrix_report) %>
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag 'gantrix', plugin: 'redmine_gantrix', media: 'all' %>
+  <%= javascript_include_tag 'gantrix/core', 'gantrix/report', plugin: 'redmine_gantrix', defer: true %>
+<% end %>
+
+<h2><%= l(:label_gantrix_report) %></h2>
+
+<%= content_tag :div, '', id: 'gantrix-report', data: {
+      config: {
+        evmUrl: project_gantrix_api_evm_path(project_id: @project),
+        scheduleUrl: gantrix_schedule_url(@project),
+        messages: gantrix_messages
+      }.to_json
+    } %>
