@@ -297,8 +297,10 @@
           if (this.o.onTimelineDblClick?.(target, this.rows[hit.r])) { e.preventDefault(); return; }
         }
         // select first: it redraws the rows, so the drag must start on the new elements
+        const linkId = e.target.closest('.gx-tl-link')?.dataset.id;
         this.select(hit.r, this.sel.c);
-        const target = document.elementFromPoint(e.clientX, e.clientY) ?? e.target;
+        const target = (linkId && this.rowsEl.querySelector(`.gx-tl-link[data-id="${linkId}"]`)) ??
+          document.elementFromPoint(e.clientX, e.clientY) ?? e.target;
         this.o.timeline?.onMouseDown?.(e, this.rows[hit.r], hit.r, target);
         return;
       }

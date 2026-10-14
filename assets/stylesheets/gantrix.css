@@ -200,7 +200,7 @@
 .gx-fz {
   position: sticky;
   left: 0;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   /* cover the row's bottom border too, so arrows running along a row line never show through */
   box-sizing: border-box;
@@ -348,16 +348,20 @@
 }
 .gx-tl-link {
   position: absolute;
-  top: 10px;
-  width: 8px;
-  height: 8px;
+  top: 8px;
+  z-index: 1;
+  width: 11px;
+  height: 11px;
+  box-sizing: border-box;
+  transform: translateX(-50%);
   border: 1.5px solid var(--gx-accent);
   border-radius: 50%;
   background: #fff;
   cursor: crosshair;
   opacity: 0;
+  pointer-events: none;
 }
-.gx-r:hover .gx-tl-link { opacity: 1; }
+.gx-r:hover .gx-tl-link, .gx-tl-link.linking { opacity: 1; pointer-events: auto; }
 .gx-tl-bar.link-target { box-shadow: 0 0 0 2px var(--gx-accent); }
 .gx-preview {
   .gx-preview-finish { margin: 2px 0 4px; font-weight: bold; &.late { color: var(--gx-late); } }
@@ -465,8 +469,7 @@
 }
 .gx-tl-off { position: absolute; top: 0; bottom: 0; background: var(--gx-off); }
 .gx-tl-msline { position: absolute; top: 0; bottom: 0; border-left: 1px dashed #9fb3d1; }
-/* centered on its x and as thick as the progress line, which runs along it: the two make one line */
-.gx-tl-today { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--gx-late); z-index: 0; }
+.gx-tl-today { position: absolute; top: 0; bottom: 0; width: 0; margin-left: -.5px; border-left: 1px dashed #9ca3af; z-index: 0; }
 .gx-tl-base { position: absolute; top: 4px; height: 3px; border-radius: 2px; background: var(--gx-base); }
 .gx-tl-bar {
   position: absolute;
@@ -509,7 +512,7 @@
   cursor: ew-resize;
 
   &.l { left: 0; }
-  &.r { right: 0; }
+  &.r { right: 0; width: 12px; }
 }
 .gx-tl-act {
   position: absolute;
@@ -564,6 +567,11 @@
   position: fixed;
   z-index: 1000;
   min-width: 240px;
+  box-sizing: border-box;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100vh - 16px);
+  overflow: auto;
+  overscroll-behavior: contain;
   padding: 4px 0;
   background: #fff;
   border: 1px solid var(--gx-line);
@@ -573,7 +581,7 @@
 
   .item {
     display: grid;
-    grid-template-columns: 14px 18px 1fr auto;
+    grid-template-columns: 14px 18px minmax(0, 1fr) auto;
     align-items: center;
     gap: 6px;
     padding: 5px 12px 5px 8px;
@@ -581,6 +589,7 @@
 
     &:hover { background: var(--gx-sel); }
     &.off { opacity: .45; cursor: default; background: none; }
+    .lab { overflow-wrap: anywhere; }
     .key { color: var(--gx-ink3); font-size: 11.5px; }
   }
   .sep { height: 1px; margin: 4px 0; background: var(--gx-line); }

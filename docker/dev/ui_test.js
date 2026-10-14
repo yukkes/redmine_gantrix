@@ -33,6 +33,11 @@ const check = (name, ok, detail = '') => {
   page.on('request', (r) => { if (r.url().includes('.woff2')) fontRequests.push(r.url()); });
   await page.goto(`${base}/projects/demo/gantrix`);
   await page.waitForSelector('.gx-r');
+  await page.evaluate(() => {
+    const a = document.getElementById('gantrix-schedule').app;
+    a.showClosed = false; a.queryId = null; a.collapsed = {};
+    return a.load(true);
+  });
 
   // 0. loading: the preloaded icon font is downloaded once, toolbar buttons have names, nothing shifts
   await page.evaluate(() => document.fonts.ready);
@@ -45,6 +50,20 @@ const check = (name, ok, detail = '') => {
   check('every toolbar button has an accessible name', unnamed === 0, `${unnamed} without`);
   const cls = await page.evaluate(() => window.__cls);
   check('no layout shift while loading (CLS < 0.1)', cls < 0.1, cls.toFixed(3));
+  const progressStyles = await page.evaluate(() => {
+    const a = document.getElementById('gantrix-schedule').app;
+    a.inazuma = true; a.setupTimeline(); a.grid.render();
+    const marker = document.querySelector('.gx-tl-today'), today = getComputedStyle(marker);
+    const line = getComputedStyle(document.querySelector('.gx-tl-inazuma'));
+    return { todayStyle: today.borderLeftStyle, todayWidth: today.borderLeftWidth, todayColor: today.borderLeftColor,
+      lineColor: line.stroke, todayX: parseFloat(marker.style.left), expectedTodayX: a.timeline.x(a.today + 1) };
+  });
+  check('today is a thin dashed marker distinct from the progress line',
+    progressStyles.todayStyle === 'dashed' && progressStyles.todayWidth === '1px' && progressStyles.todayColor !== progressStyles.lineColor,
+    JSON.stringify(progressStyles));
+  check('today marker uses the end-of-day boundary', progressStyles.todayX === progressStyles.expectedTodayX);
+  check('in progress contains no closed leaf rows', await page.evaluate(() =>
+    document.getElementById('gantrix-schedule').app.rows.every((r) => r.hasChildren || !r.task.closed)));
   if (process.env.TRACE) {
     page.on('console', (m) => console.log('  [page] ' + m.text()));
     await page.evaluate(() => {
@@ -56,7 +75,7 @@ const check = (name, ok, detail = '') => {
   }
 
   const data = () => page.evaluate(async () => {
-    const j = await (await fetch('/projects/demo/gantrix/api/schedule', { headers: { Accept: 'application/json' } })).json();
+    const j = await (await fetch('/projects/demo/gantrix/api/schedule?closed=1', { headers: { Accept: 'application/json' } })).json();
     // tasks come as columns + rows (the page may not have loaded Gantrix)
     return { ...j, tasks: j.tasks.rows.map((r) => Object.fromEntries(j.tasks.columns.map((c, i) => [c, r[i]]))) };
   });
@@ -195,6 +214,37 @@ const check = (name, ok, detail = '') => {
   const groups = await page.evaluate(() => [...document.querySelectorAll('.gx-menu .head')].map((h) => `${h.textContent}:${h.nextElementSibling?.querySelector('.lab')?.textContent}`));
   check('bookmarked queries are listed first', groups[1]?.endsWith(':未完了のタスク'), groups.join(' | '));
   await page.mouse.click(5, 5);
+  for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 }, { width: 1280, height: 320 }]) {
+    await page.setViewportSize(viewport);
+    const lastQuery = await page.evaluate(() => {
+      const a = document.getElementById('gantrix-schedule').app;
+      const q = a.data.queries.find((x) => !x.bookmarked);
+      a.data.queries = [...a.data.queries, ...Array.from({ length: 100 }, (_, i) => ({
+        id: q.id, name: `Overflow query ${i + 1}${i === 99 ? ' long-name'.repeat(30) : ''}`, bookmarked: false,
+      }))];
+      return q.id;
+    });
+    await page.click('.gx-scope');
+    const menuBounds = await page.$eval('.gx-menu', (m) => {
+      const r = m.getBoundingClientRect();
+      const first = m.querySelector('.item').getBoundingClientRect();
+      return { inside: r.top >= 8 && r.left >= 8 && r.bottom <= innerHeight - 8 && r.right <= innerWidth - 8,
+        scrolls: m.scrollHeight > m.clientHeight, overflow: getComputedStyle(m).overflowY,
+        firstReachable: m.contains(document.elementFromPoint(first.x + first.width / 2, first.y + first.height / 2)) };
+    });
+    check(`many queries fit and scroll at ${viewport.width}x${viewport.height}`,
+      menuBounds.inside && menuBounds.scrolls && menuBounds.overflow === 'auto' && menuBounds.firstReachable, JSON.stringify(menuBounds));
+    const last = page.locator('.gx-menu .item').filter({ hasText: 'Overflow query 100' });
+    await last.scrollIntoViewIfNeeded();
+    check(`last query is reachable at ${viewport.width}x${viewport.height}`, await last.evaluate((n) => {
+      const r = n.getBoundingClientRect(), m = n.closest('.gx-menu').getBoundingClientRect();
+      return r.top >= m.top && r.bottom <= m.bottom;
+    }));
+    await last.click();
+    await settle();
+    check(`last query is selectable at ${viewport.width}x${viewport.height}`, (await appState()).queryId === lastQuery);
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
   await scopeItem(await page.evaluate(() => window.Gantrix.T('view_needed')));
   await settle();
   await page.waitForTimeout(1200); // leave the view unfiltered for the next run
@@ -203,15 +253,26 @@ const check = (name, ok, detail = '') => {
   const printed = await page.evaluate(() => {
     const a = document.getElementById('gantrix-schedule').app;
     a.print(...a.printSpan(), 'a4', false);
+    const markers = [...document.querySelectorAll('.gx-print .gx-tl-today')], endOfToday = a.timeline.x(a.today + 1);
+    const expectedMarker = document.createElement('div');
+    expectedMarker.style.left = `${endOfToday}px`;
     const r = { sheets: document.querySelectorAll('.gx-sheet').length, heads: document.querySelectorAll('.gx-print .gx-head').length,
-                rows: document.querySelectorAll('.gx-print .gx-r').length, expected: a.rows.length };
+                rows: document.querySelectorAll('.gx-print .gx-r').length, expected: a.rows.length,
+                markerCount: markers.length, markerEnds: markers.every((m) => m.style.left === expectedMarker.style.left),
+                capped: [...document.querySelectorAll('.gx-print .gx-tl-inazuma')].every((line) =>
+                  [...line.points].every((p) => p.x <= endOfToday + .051)) };
     window.dispatchEvent(new Event('afterprint'));
     r.cleaned = !document.querySelector('.gx-print') && !document.body.classList.contains('gx-printing');
     return r;
   });
   check('print lays out all rows on pages and cleans up', printed.rows === printed.expected && printed.heads === printed.sheets && printed.cleaned, JSON.stringify(printed));
+  check('printed today markers and progress caps share the end-of-day boundary',
+    printed.markerCount === printed.sheets && printed.markerEnds && printed.capped);
 
   // ---- timeline editing ----
+  // The dependency fixture uses a completed predecessor, available only in the all-tasks view.
+  await scopeItem(await page.evaluate(() => window.Gantrix.T('view_all')));
+  await settle();
   const app = (fn, arg) => page.evaluate(([f, x]) => new Function('a', 'x', f)(document.getElementById('gantrix-schedule').app, x), [fn, arg]);
   const barBox = (subject) => page.evaluate((s) => {
     const a = document.getElementById('gantrix-schedule').app, t = a.data.tasks.find((x) => x.subject === s);
@@ -245,11 +306,28 @@ const check = (name, ok, detail = '') => {
   await page.keyboard.press('Control+z');
   await settle();
 
-  // 12. drag from the dot after a bar onto another bar: new dependency; click the arrow to delete it
+  await showBar('DB設計');
+  const resizeBox = await barBox('DB設計'), beforeResize = await task('DB設計');
+  await page.mouse.move(resizeBox.x + resizeBox.w - 9, resizeBox.y + resizeBox.h / 2);
+  await page.mouse.down();
+  await page.mouse.move(resizeBox.x + resizeBox.w + 13, resizeBox.y + resizeBox.h / 2, { steps: 4 });
+  await page.mouse.up();
+  await settle();
+  check('finish resizing remains usable beside the centered link handle', (await task('DB設計')).due_date > beforeResize.due_date);
+  await page.keyboard.press('Control+z');
+  await settle();
+
+  // 12. drag between the dots at bar ends: new dependency; click the arrow to delete it
   await showBar('要件定義書作成', 3);
   const from12 = await barBox('要件定義書作成'), to12 = await barBox('画面設計');
   await page.mouse.move(from12.x + from12.w / 2, from12.y + from12.h / 2);
   const dot = await page.evaluate((id) => { const r = document.querySelector(`.gx-tl-link[data-id="${id}"]`)?.getBoundingClientRect(); return r && { x: r.x + r.width / 2, y: r.y + r.height / 2 }; }, from12.id);
+  check('link handle is centered on the bar end', !!dot && Math.abs(dot.x - from12.x - from12.w) < .1 &&
+    Math.abs(dot.y - from12.y - from12.h / 2) < .1, JSON.stringify({ dot, bar: from12 }));
+  check('link handle is visible and above the label and overlay', !!dot && await page.evaluate(([id, dot]) => {
+    const handle = document.querySelector(`.gx-tl-link[data-id="${id}"]`);
+    return getComputedStyle(handle).opacity === '1' && document.elementFromPoint(dot.x, dot.y) === handle;
+  }, [from12.id, dot]));
   const relCount = async () => (await data()).relations.filter((r) => r.to === to12.id).length;
   const n0 = await relCount();
   // 要件定義書作成 already precedes 画面設計 through 要件レビュー, so a direct link moves nothing
@@ -257,7 +335,19 @@ const check = (name, ok, detail = '') => {
   if (dot && target) {
     await page.mouse.move(dot.x, dot.y);
     await page.mouse.down();
-    await page.mouse.move(Math.min(target.x + 14, 1270), target.y + target.h / 2, { steps: 6 }); // the bar may run past the window
+    const targetDot = await page.evaluate((id) => {
+      const a = document.getElementById('gantrix-schedule').app;
+      const handle = document.querySelector(`.gx-tl-link[data-id="${id}"]`);
+      const box = handle.getBoundingClientRect();
+      a.grid.scroll.scrollLeft += Math.max(0, box.right - innerWidth + 32);
+      const r = handle.getBoundingClientRect();
+      return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    }, target.id);
+    await page.mouse.move(targetDot.x, targetDot.y, { steps: 6 });
+    check('source link handle stays visible while dragging', await page.evaluate((id) => {
+      const handle = document.querySelector(`.gx-tl-link[data-id="${id}"]`);
+      return handle.classList.contains('linking') && getComputedStyle(handle).opacity === '1';
+    }, from12.id));
     await page.mouse.up();
     await settle();
   }

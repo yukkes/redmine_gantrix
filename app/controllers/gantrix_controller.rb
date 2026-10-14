@@ -8,10 +8,8 @@ class GantrixController < ApplicationController
   TASK_COLUMNS = %w[id subject parent_id status closed assigned_to_id assigned_to start_date due_date done_ratio
                     estimated_hours status_id actual_start_date actual_end_date position spent_hours context slack
                     wbs hidden more].freeze
-  # "in progress" view: the open tasks, except those dated more than this many days ago, and the tasks closed
-  # within RECENT_CLOSED_DAYS
+  # "in progress" view: open leaf tasks within this many days, plus their ancestors
   OLD_OPEN_DAYS = 365
-  RECENT_CLOSED_DAYS = 14
   before_action :find_project_by_project_id, :authorize
   helper :gantrix_pages
   before_action :ensure_fields
@@ -39,15 +37,16 @@ class GantrixController < ApplicationController
     positions = Gantrix::Positions.for(in_project)
     # WBS numbers of all tasks, so that a number stays the same whatever is shown
     tree = Gantrix::Tree.new(all, positions: positions)
-    # without a query, the "in progress" view unless "all" is asked for (a long-running project is mostly
-    # closed tasks): the other tasks stay folded under their parents until they are unfolded
+    # without a query, show only current open leaves and their ancestors unless "all" is asked for
     needed = !query && params[:closed].to_s != '1'
     issues = all
     context = Set.new
     issues, context = filter_by_query(all, query) if query
-    # open=all: every task unfolded ("expand all"); otherwise the ids of the tasks unfolded on the screen
-    opened = params[:open] == 'all' ? all_ids : params[:open].to_s.split(',').to_set(&:to_i)
-    issues = needed_tree(all, tree, opened) if needed
+    if needed
+      old = User.current.today - OLD_OPEN_DAYS
+      current_ids = all.select { |i| tree.leaf?(i.id) && !i.closed? && (i.due_date || i.start_date || old) >= old }.to_set(&:id)
+      issues, context = with_ancestors(all, current_ids)
+    end
     ids = issues.to_set(&:id)
     precedes = IssueRelation.where(relation_type: IssueRelation::TYPE_PRECEDES, issue_from_id: in_project)
                             .select { |r| all_ids.include?(r.issue_from_id) && all_ids.include?(r.issue_to_id) }
@@ -88,9 +87,7 @@ class GantrixController < ApplicationController
           [i.id, i.subject, i.parent_id, rows.status_names[i.status_id], i.closed?, i.assigned_to_id,
            rows.assignee_names[i.assigned_to_id], i.start_date, i.due_date, i.done_ratio.to_i, i.estimated_hours,
            i.status_id, actual[:start], actual[:end], positions[i.id], spent[i.id].to_f.round(2),
-           context.include?(i.id), floats[i.id], tree.wbs(i.id), hidden[:rollups][i.id],
-           # subtasks not loaded: unfolding the task loads them
-           needed && tree.children(i.id).any? { |c| ids.exclude?(c) }]
+           context.include?(i.id), floats[i.id], tree.wbs(i.id), hidden[:rollups][i.id], false]
         end
       },
       # predecessors that are not shown: their WBS numbers
@@ -427,30 +424,6 @@ class GantrixController < ApplicationController
     raise Error, e.message
   end
 
-  # The "in progress" view as a tree: the parents of the tasks in progress are unfolded, and so are +opened+
-  # (unfolded on the screen); the tasks shown are the top-level ones and the subtasks of the unfolded tasks.
-  def needed_tree(all, tree, opened)
-    recent = @project.issues.visible.where(Issue.arel_table[:closed_on].gteq(RECENT_CLOSED_DAYS.days.ago)).pluck(:id).to_set
-    old = User.current.today - OLD_OPEN_DAYS
-    by_id = all.index_by(&:id)
-    unfold = Set.new
-    all.each do |i|
-      # an open task without dates (just added, not planned yet) is in progress too
-      next unless i.closed? ? recent.include?(i.id) : (i.due_date || i.start_date || old) >= old
-
-      parent = i.parent_id
-      parent = by_id[parent].parent_id while parent && by_id[parent] && unfold.add?(parent)
-    end
-    unfold |= opened
-    shown = Set.new
-    queue = tree.children(nil).dup
-    while (id = queue.shift)
-      shown << id
-      queue.concat(tree.children(id)) if unfold.include?(id)
-    end
-    all.select { |i| shown.include?(i.id) }
-  end
-
   def with_ancestors(issues, matched_ids)
     by_id = issues.index_by(&:id)
     keep = matched_ids.select { |id| by_id[id] }.to_set
@@ -469,7 +442,7 @@ class GantrixController < ApplicationController
   # Leaf tasks left out of the screen still count in their parents' dates, progress and hours and in
   # the summary. Each parent shown gets the totals of the hidden leaves below it, in the order
   # [start, due, actual start, actual end, all have an actual end, working days, working days x progress,
-  # estimated hours, spent hours] (the screen rolls them up with its own leaves); the summary gets the
+  # estimated hours, spent hours, planned working days] (the screen rolls them up with its own leaves); the summary gets the
   # totals of all hidden leaves with both dates.
   def hidden_leaves(all, ids, tree, actuals, spent, calendar)
     by_id = all.index_by(&:id)
@@ -494,6 +467,7 @@ class GantrixController < ApplicationController
 
       w = calendar.working_days(i.start_date, i.due_date)
       done = i.done_ratio.to_i
+      elapsed = 0
       if i.start_date && i.due_date
         elapsed = today < i.start_date ? 0 : calendar.working_days(i.start_date, [i.due_date, today].min)
         summary[:w] += w
@@ -509,7 +483,7 @@ class GantrixController < ApplicationController
       next unless parent
 
       actual = actuals[i.id] || {}
-      r = (rollups[parent] ||= [nil, nil, nil, nil, true, 0, 0, 0.0, 0.0])
+      r = (rollups[parent] ||= [nil, nil, nil, nil, true, 0, 0, 0.0, 0.0, 0])
       r[0] = [r[0], i.start_date].compact.min
       r[1] = [r[1], i.due_date].compact.max
       r[2] = [r[2], actual[:start]].compact.min
@@ -519,6 +493,7 @@ class GantrixController < ApplicationController
       r[6] += w * done
       r[7] += i.estimated_hours.to_f
       r[8] += spent[i.id].to_f
+      r[9] += elapsed
     end
     rollups.each_value do |r|
       r[7] = r[7].round(2)

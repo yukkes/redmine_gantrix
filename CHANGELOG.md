@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.1.1
+
+- In-progress schedules: show open-status leaf tasks whose due date (or start date when no due date
+  exists) is on or after today minus 365 days, plus their ancestors. Include undated and future tasks.
+  Exclude recently closed tasks and branches without matching open leaves, even when expanded.
+  Preserve WBS numbers and totals from hidden tasks; leave the All and saved-query views unchanged.
+- Keep large saved-query menus within the viewport, make them scrollable, and wrap long labels.
+- Align working-day progress lines with scheduled bar boundaries, including overdue and completed
+  tasks and weighted collapsed-parent totals that include hidden children. Keep overdue progress
+  anchored to its scheduled position, cap progress at the end of today, and show a separate gray
+  dashed today marker on that boundary. Preserve line continuity across scrolling and print pages.
+- Center dependency handles on bar ends, keep them above status labels, and preserve dragging
+  through row selection while keeping finish-date resizing available. Keep handles visible during
+  dragging, accept other handles as drop targets, and prevent overlap with fixed columns.
+- Update English and Japanese filtering help and hidden-task labels, and add filtering, progress-line,
+  menu, printing, and dependency-interaction regression checks.
+
 ## 0.1.0
 
 First release.

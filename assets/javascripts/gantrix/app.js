@@ -27,10 +27,10 @@
       const saved = this.cfg.view ?? GX.store(this.key) ?? {};
       this.zoom = saved.zoom ?? 'day';
       this.collapsed = saved.collapsed ?? {};
-      // "all", or "in progress" (the default): the other tasks are loaded when their parent is unfolded
+      // "all", or "in progress" (the default): current open leaves and their ancestors
       this.showClosed = !!saved.showClosed;
       this.opened = new Set(saved.opened ?? []);
-      this.openAll = false; // "expand all" in progress view: everything loaded until the next change of view
+      this.openAll = false; // "expand all" in progress view: the date range still applies
       this.inazuma = saved.inazuma !== false;
       this.baselineId = saved.baselineId ?? '';
       this.extraCols = saved.extraCols ?? ['preds'];
@@ -176,21 +176,24 @@
         if (this.isLeaf(t)) {
           t.w = this.cal.workingDays(t.s, t.e);
           t.progress = t.done_ratio;
+          const pv = t.s != null && t.e != null ? this.cal.elapsed(t.s, t.e, this.baseDay) : 0;
+          t.planned = pv / t.w * 100;
           t.sum = { s: t.s, e: t.e, as: t.as, ae: t.ae, allEnded: t.ae != null, w: t.w, wd: t.w * t.done_ratio,
-                    est: +t.estimated_hours || 0, spent: +t.spent_hours || 0 };
+                    est: +t.estimated_hours || 0, spent: +t.spent_hours || 0, pv };
           continue;
         }
         this.rollUp(t.children);
         const h = t.hidden;
         const a = h
-          ? { s: GX.toDay(h[0]), e: GX.toDay(h[1]), as: GX.toDay(h[2]), ae: GX.toDay(h[3]), allEnded: h[4], w: h[5], wd: h[6], est: h[7], spent: h[8] }
-          : { s: null, e: null, as: null, ae: null, allEnded: true, w: 0, wd: 0, est: 0, spent: 0 };
+          ? { s: GX.toDay(h[0]), e: GX.toDay(h[1]), as: GX.toDay(h[2]), ae: GX.toDay(h[3]), allEnded: h[4], w: h[5], wd: h[6], est: h[7], spent: h[8], pv: h[9] }
+          : { s: null, e: null, as: null, ae: null, allEnded: true, w: 0, wd: 0, est: 0, spent: 0, pv: 0 };
         for (const { sum: x } of t.children) {
           Object.assign(a, { s: lo(a.s, x.s), e: hi(a.e, x.e), as: lo(a.as, x.as), ae: hi(a.ae, x.ae), allEnded: a.allEnded && x.allEnded });
           a.w += x.w;
           a.wd += x.wd;
           a.est += x.est;
           a.spent += x.spent;
+          a.pv += x.pv;
         }
         t.sum = a;
         if (this.data.parent_dates_derived) {
@@ -201,6 +204,7 @@
         t.ae = a.allEnded ? a.ae : null;
         t.w = a.w;
         t.progress = t.w ? Math.round(a.wd / t.w) : 0;
+        t.planned = t.w ? a.pv / t.w * 100 : 0;
         t.est_total = a.est;
         t.spent_total = a.spent;
       }
@@ -216,7 +220,7 @@
             t.done_ratio < Math.floor(this.cal.elapsed(t.s, t.e, base) / t.w * 100);
           const collapsed = this.isFolded(t);
           out.push({ id: t.id, task: t, level, wbs: this.wbsById[t.id], hasChildren: !leaf, collapsed,
-                     progress: t.progress, days: t.s != null && t.e != null ? t.w : null, late, behind });
+                     progress: t.progress, planned: t.planned, days: t.s != null && t.e != null ? t.w : null, late, behind });
           if (!collapsed) walk(t.children, level + 1);
         }
       };
@@ -802,8 +806,12 @@
         m.append(n);
       }
       document.body.append(m);
-      m.style.left = `${Math.min(x, window.innerWidth - m.offsetWidth - 8)}px`;
-      m.style.top = `${Math.min(y, window.innerHeight - m.offsetHeight - 8)}px`;
+      const y0 = Math.max(8, Math.min(y, window.innerHeight - 8));
+      const below = window.innerHeight - y0 - 8, above = y0 - 8;
+      const down = m.offsetHeight <= below || below >= above;
+      m.style.maxHeight = `${Math.max(0, down ? below : above)}px`;
+      m.style.left = `${Math.max(8, Math.min(x, window.innerWidth - m.offsetWidth - 8))}px`;
+      m.style.top = `${down ? y0 : Math.max(8, y0 - m.offsetHeight)}px`;
       this.menu = m;
     }
     contextMenu(e) {

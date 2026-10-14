@@ -72,6 +72,7 @@ test_version() {
 
 # the JavaScript calendar does not need Redmine
 node docker/dev/checks/calendar.js | tail -1 || exit 1
+node docker/dev/checks/progress_line.js | tail -1 || exit 1
 
 # the versions run side by side (separate containers and databases); their output is shown in order.
 # Logs stay in the working tree (not /tmp, which may be a small tmpfs)

@@ -5,7 +5,7 @@ Redmine::Plugin.register :redmine_gantrix do
   author 'yukkes'
   description 'Spreadsheet-style WBS schedule and Gantt chart with planned and actual dates, ' \
               'progress tracking, rescheduling, and earned value management (EVM).'
-  version '0.1.0'
+  version '0.1.1'
   url 'https://github.com/yukkes/redmine_gantrix'
   author_url 'https://github.com/yukkes'
   requires_redmine version_or_higher: '5.0.0'

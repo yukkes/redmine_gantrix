@@ -78,7 +78,7 @@
         const vd = GX.toDay(v.date);
         if (vd >= c.firstDay && vd <= c.lastDay) out.push(`<div class="gx-tl-msline" style="left:${this.x(vd) + dw / 2}px"></div>`);
       }
-      if (c.today >= c.firstDay && c.today <= c.lastDay) out.push(`<div class="gx-tl-today" style="left:${this.x(c.today) + dw / 2}px"></div>`);
+      if (c.today >= c.firstDay && c.today <= c.lastDay) out.push(`<div class="gx-tl-today" style="left:${this.x(c.today + 1)}px"></div>`);
       return out.join('');
     }
 
@@ -109,7 +109,7 @@
           // a bar cut at an end cannot be dragged there: no handle on that side
           out.push(`<div class="${cls}" data-id="${t.id}" style="left:${x1}px;width:${w}px" title="${title}"><b style="width:${prog}%"></b>${p.l ? '' : '<i class="gx-tl-h l"></i>'}${p.r ? '' : '<i class="gx-tl-h r"></i>'}</div>`);
           // drag this dot onto another bar to make that task a successor
-          if (c.canLink && !p.r) out.push(`<i class="gx-tl-link" data-id="${t.id}" style="left:${x1 + w + 2}px" title="${esc(T('link_drag_tip'))}"></i>`);
+          if (c.canLink && !p.r) out.push(`<i class="gx-tl-link" data-id="${t.id}" style="left:${x1 + w}px" title="${esc(T('link_drag_tip'))}"></i>`);
           const st = c.statusOf(t);
           if (st && c.zoom !== 'month' && !p.r) {
             const color = st.color ? `;--st:${st.color}` : '';
@@ -125,9 +125,22 @@
       return out.join('');
     }
 
+    progressX(row) {
+      const c = this.ctx, t = row.task;
+      if ((row.hasChildren && !row.collapsed) || t.s == null || t.e == null) return null;
+      const base = this.x(c.baseDay + 1);
+      const progress = row.hasChildren && t.sum?.w ? t.sum.wd / t.sum.w : row.progress;
+      const days = c.cal.workingDays(t.s, t.e), first = c.cal.nextWorking(t.s);
+      const work = days * Math.max(0, Math.min(100, progress)) / 100, n = Math.ceil(work);
+      const actual = progress >= 100 ? t.e + 1
+        : work ? c.cal.step(first, n - 1) + work - n + 1 : t.s;
+      const x = Math.min(base, this.x(Math.max(t.s, Math.min(actual, t.e + 1))));
+      return Math.max(-8, Math.min(x, this.width() + 8));
+    }
+
     // dependency arrows + progress line for the rendered window
     overlay(svg, first, last, forPrint = false) {
-      const c = this.ctx, RH = c.rowHeight, dw = this.dw, rows = c.rows(), lo = first - 40, hi = last + 40;
+      const c = this.ctx, RH = c.rowHeight, rows = c.rows(), lo = first - 40, hi = last + 40;
       const out = ['<defs><marker id="gx-tl-ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L8,4 L0,8 z" class="gx-tl-arrowhead"/></marker></defs>'];
       for (const rel of c.relations ?? []) {
         const ia = c.indexOf(rel.from), ib = c.indexOf(rel.to);
@@ -149,19 +162,33 @@
         if (c.onDepClick && !forPrint) out.push(`<path d="${hit}" class="gx-tl-dep-hit" data-rel="${rel.id}"><title>${esc(T('link_click_tip'))}</title></path>`);
       }
       if (c.showInazuma) {
-        // on schedule = the end of the base day; drawn half a day earlier, so its vertical line is the today line
-        // (in the middle of the day) and every point keeps its distance from it
-        const half = dw / 2, bx = this.x(c.baseDay + 1) - half, pts = [[bx, first * RH]];
-        for (let i = first; i < Math.min(last, rows.length); i++) {
-          const r = rows[i], t = r.task;
-          if (r.hasChildren || t.s == null || t.e == null) continue;
-          const p = r.progress;
-          const px = (p >= 100 && t.e <= c.baseDay) || (p === 0 && t.s > c.baseDay) ? bx
-            : Math.max(-8, Math.min(this.x(t.s) + (t.e - t.s + 1) * dw * p / 100 - half, this.width() + 8));
-          pts.push([px, i * RH + RH / 2]);
+        const pts = [], point = (i) => {
+          const x = this.progressX(rows[i]);
+          return x == null ? null : [x, i * RH + RH / 2];
+        };
+        // Neighboring points keep scrolling and page breaks from inventing a return to today.
+        for (let i = first - 1; i >= 0; i--) {
+          const p = point(i);
+          if (p) { pts.push(p); break; }
         }
-        pts.push([bx, Math.min(last, rows.length) * RH]);
-        out.push(`<polyline class="gx-tl-inazuma" points="${pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ')}"/>`);
+        if (!pts.length) {
+          for (let i = first; i < Math.min(last, rows.length); i++) {
+            const p = point(i);
+            if (p) { pts.push([p[0], p[1] - RH / 2]); break; }
+          }
+        }
+        for (let i = first; i < Math.min(last, rows.length); i++) {
+          const p = point(i);
+          if (p) pts.push(p);
+        }
+        let next = null;
+        for (let i = last; i < rows.length; i++) {
+          next = point(i);
+          if (next) break;
+        }
+        if (next) pts.push(next);
+        else if (pts.length) { const p = pts.at(-1); pts.push([p[0], p[1] + RH / 2]); }
+        if (pts.length) out.push(`<polyline class="gx-tl-inazuma" points="${pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ')}"/>`);
       }
       svg.innerHTML = out.join('');
       if (!forPrint && svg !== this.svg) {
@@ -178,13 +205,14 @@
       }
     }
 
-    // drag from the dot after a bar to another bar: a new "precedes" relation
+    // drag from the dot at a bar's end to another bar: a new "precedes" relation
     startLink(e, dot) {
       const c = this.ctx, svg = this.svg, from = +dot.dataset.id;
       if (!svg) return;
       const box = () => svg.getBoundingClientRect();
       const r0 = dot.getBoundingClientRect(), b0 = box();
       const x0 = r0.left + r0.width / 2 - b0.left, y0 = r0.top + r0.height / 2 - b0.top;
+      dot.classList.add('linking');
       const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       line.setAttribute('class', 'gx-tl-dep linking');
       line.setAttribute('marker-end', 'url(#gx-tl-ar)');
@@ -193,13 +221,16 @@
       const mv = (ev) => {
         const b = box();
         line.setAttribute('d', `M${x0},${y0} L${ev.clientX - b.left},${ev.clientY - b.top}`);
-        const bar = document.elementFromPoint(ev.clientX, ev.clientY)?.closest?.('.gx-tl-bar');
+        const hit = document.elementFromPoint(ev.clientX, ev.clientY), handle = hit?.closest?.('.gx-tl-link');
+        const bar = hit?.closest?.('.gx-tl-bar') ??
+          (handle && handle.parentElement.querySelector(`.gx-tl-bar[data-id="${handle.dataset.id}"]`));
         const id = bar && +bar.dataset.id !== from && !bar.classList.contains('parent') ? bar : null;
         if (id !== target) { target?.classList.remove('link-target'); id?.classList.add('link-target'); target = id; }
       };
       const up = () => {
         document.removeEventListener('mousemove', mv);
         document.removeEventListener('mouseup', up);
+        dot.classList.remove('linking');
         line.remove();
         target?.classList.remove('link-target');
         if (target) c.onLink?.(from, +target.dataset.id);
